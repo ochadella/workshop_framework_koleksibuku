@@ -58,6 +58,13 @@
                             </div>
                         @endif
 
+                        {{-- Flash Message Error (opsional, ga ganggu) --}}
+                        @if(session('error'))
+                            <div class="alert alert-danger">
+                                {{ session('error') }}
+                            </div>
+                        @endif
+
                         <form method="POST" action="{{ route('login') }}" class="pt-3">
                             @csrf
 
@@ -98,6 +105,19 @@
                                         class="btn btn-block btn-gradient-primary btn-lg font-weight-medium auth-form-btn">
                                     SIGN IN
                                 </button>
+                            </div>
+
+                            {{-- Divider (tambah UI aja, ga ganggu logika) --}}
+                            <div class="my-3 text-center">
+                                <span class="text-muted">or</span>
+                            </div>
+
+                            {{-- Login Google (BARU, tidak ganggu login biasa) --}}
+                            <div class="d-grid gap-2">
+                                <a href="{{ route('google.redirect') }}"
+                                   class="btn btn-block btn-outline-danger btn-lg font-weight-medium">
+                                    <i class="mdi mdi-google me-2"></i> Sign in with Google
+                                </a>
                             </div>
 
                             {{-- Remember + Forgot --}}

@@ -24,9 +24,9 @@
       <div class="card bg-gradient-danger card-img-holder text-white">
         <div class="card-body">
           <img src="{{ asset('images/dashboard/circle.svg') }}" class="card-img-absolute" alt="circle-image" />
-          <h4 class="font-weight-normal mb-3">Weekly Sales <i class="mdi mdi-chart-line mdi-24px float-end"></i></h4>
-          <h2 class="mb-5">$ 15,0000</h2>
-          <h6 class="card-text">Increased by 60%</h6>
+          <h4 class="font-weight-normal mb-3">Total Buku <i class="mdi mdi-book-open-page-variant mdi-24px float-end"></i></h4>
+          <h2 class="mb-5">{{ $totalBuku ?? 0 }}</h2>
+          <h6 class="card-text">Jumlah semua data buku</h6>
         </div>
       </div>
     </div>
@@ -35,9 +35,9 @@
       <div class="card bg-gradient-info card-img-holder text-white">
         <div class="card-body">
           <img src="{{ asset('images/dashboard/circle.svg') }}" class="card-img-absolute" alt="circle-image" />
-          <h4 class="font-weight-normal mb-3">Weekly Orders <i class="mdi mdi-bookmark-outline mdi-24px float-end"></i></h4>
-          <h2 class="mb-5">45,6334</h2>
-          <h6 class="card-text">Decreased by 10%</h6>
+          <h4 class="font-weight-normal mb-3">Total Kategori <i class="mdi mdi-tag-multiple mdi-24px float-end"></i></h4>
+          <h2 class="mb-5">{{ $totalKategori ?? 0 }}</h2>
+          <h6 class="card-text">Jumlah semua kategori</h6>
         </div>
       </div>
     </div>
@@ -46,9 +46,9 @@
       <div class="card bg-gradient-success card-img-holder text-white">
         <div class="card-body">
           <img src="{{ asset('images/dashboard/circle.svg') }}" class="card-img-absolute" alt="circle-image" />
-          <h4 class="font-weight-normal mb-3">Visitors Online <i class="mdi mdi-diamond mdi-24px float-end"></i></h4>
-          <h2 class="mb-5">95,5741</h2>
-          <h6 class="card-text">Increased by 5%</h6>
+          <h4 class="font-weight-normal mb-3">Buku Baru (7 Hari) <i class="mdi mdi-calendar-plus mdi-24px float-end"></i></h4>
+          <h2 class="mb-5">{{ $buku7Hari ?? 0 }}</h2>
+          <h6 class="card-text">Ditambahkan 7 hari terakhir</h6>
         </div>
       </div>
     </div>
@@ -59,7 +59,7 @@
       <div class="card">
         <div class="card-body">
           <div class="clearfix">
-            <h4 class="card-title float-start">Visit And Sales Statistics</h4>
+            <h4 class="card-title float-start">Jumlah Buku per Bulan ({{ $tahun ?? '' }})</h4>
             <div id="visit-sale-chart-legend" class="rounded-legend legend-horizontal legend-top-right float-end"></div>
           </div>
           <canvas id="visit-sale-chart" class="mt-4"></canvas>
@@ -70,7 +70,7 @@
     <div class="col-md-5 grid-margin stretch-card">
       <div class="card">
         <div class="card-body">
-          <h4 class="card-title">Traffic Sources</h4>
+          <h4 class="card-title">Top Kategori</h4>
           <div class="doughnutjs-wrapper d-flex justify-content-center">
             <canvas id="traffic-chart"></canvas>
           </div>
@@ -84,47 +84,32 @@
     <div class="col-12 grid-margin">
       <div class="card">
         <div class="card-body">
-          <h4 class="card-title">Recent Tickets</h4>
+          <h4 class="card-title">Recent Books</h4>
           <div class="table-responsive">
             <table class="table">
               <thead>
                 <tr>
-                  <th> Assignee </th>
-                  <th> Subject </th>
-                  <th> Status </th>
-                  <th> Last Update </th>
-                  <th> Tracking ID </th>
+                  <th> Kode </th>
+                  <th> Judul </th>
+                  <th> Pengarang </th>
+                  <th> Kategori </th>
+                  <th> Dibuat </th>
                 </tr>
               </thead>
               <tbody>
-                <tr>
-                  <td><img src="{{ asset('images/faces/face1.jpg') }}" class="me-2" alt="image"> David Grey</td>
-                  <td> Fund is not recieved </td>
-                  <td><label class="badge badge-gradient-success">DONE</label></td>
-                  <td> Dec 5, 2017 </td>
-                  <td> WD-12345 </td>
-                </tr>
-                <tr>
-                  <td><img src="{{ asset('images/faces/face2.jpg') }}" class="me-2" alt="image"> Stella Johnson</td>
-                  <td> High loading time </td>
-                  <td><label class="badge badge-gradient-warning">PROGRESS</label></td>
-                  <td> Dec 12, 2017 </td>
-                  <td> WD-12346 </td>
-                </tr>
-                <tr>
-                  <td><img src="{{ asset('images/faces/face3.jpg') }}" class="me-2" alt="image"> Marina Michel</td>
-                  <td> Website down for one week </td>
-                  <td><label class="badge badge-gradient-info">ON HOLD</label></td>
-                  <td> Dec 16, 2017 </td>
-                  <td> WD-12347 </td>
-                </tr>
-                <tr>
-                  <td><img src="{{ asset('images/faces/face4.jpg') }}" class="me-2" alt="image"> John Doe</td>
-                  <td> Loosing control on server </td>
-                  <td><label class="badge badge-gradient-danger">REJECTED</label></td>
-                  <td> Dec 3, 2017 </td>
-                  <td> WD-12348 </td>
-                </tr>
+                @forelse ($recentBooks as $buku)
+                  <tr>
+                    <td>{{ $buku->kode }}</td>
+                    <td>{{ $buku->judul }}</td>
+                    <td>{{ $buku->pengarang }}</td>
+                    <td>{{ optional($buku->kategori)->nama_kategori ?? '-' }}</td>
+                    <td>{{ optional($buku->created_at)->format('d M Y') }}</td>
+                  </tr>
+                @empty
+                  <tr>
+                    <td colspan="5" class="text-center">Belum ada data buku.</td>
+                  </tr>
+                @endforelse
               </tbody>
             </table>
           </div>
@@ -136,5 +121,13 @@
 @endsection
 
 @push('scripts')
-  <script src="{{ asset('purple/assets/js/dashboard.js') }}"></script>
+  <script>
+    window.dashboardData = {
+      bukuPerBulan: @json(array_values($bukuPerBulan ?? [])),
+      kategoriLabels: @json($kategoriLabels ?? []),
+      kategoriTotals: @json($kategoriTotals ?? [])
+    };
+  </script>
+
+  <script src="{{ asset('js/dashboard.js') }}"></script>
 @endpush

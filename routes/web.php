@@ -5,6 +5,9 @@ use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\KategoriController;
 use App\Http\Controllers\BukuController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\GoogleAuthController;
+use App\Http\Controllers\OtpController;
+use App\Http\Controllers\PdfController; // ✅ TAMBAHAN
 
 Auth::routes();
 
@@ -34,6 +37,18 @@ Route::get('/home', function () {
 
 /*
 |--------------------------------------------------------------------------
+| Google Login + OTP (di luar auth middleware, karena user belum login)
+|--------------------------------------------------------------------------
+*/
+Route::get('/auth/google', [GoogleAuthController::class, 'redirect'])->name('google.login');
+Route::get('/auth/google/redirect', [GoogleAuthController::class, 'redirect'])->name('google.redirect');
+Route::get('/auth/google/callback', [GoogleAuthController::class, 'callback'])->name('google.callback');
+
+Route::get('/otp', [OtpController::class, 'show'])->name('otp.show');
+Route::post('/otp', [OtpController::class, 'verify'])->name('otp.verify');
+
+/*
+|--------------------------------------------------------------------------
 | Authenticated Pages (prefix /dashboard)
 |--------------------------------------------------------------------------
 */
@@ -45,6 +60,14 @@ Route::middleware('auth')->prefix('dashboard')->group(function () {
     |--------------------------------------------------------------------------
     */
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
+
+    /*
+    |--------------------------------------------------------------------------
+    | PDF Routes (Studi Kasus 2) ✅ TAMBAHAN
+    |--------------------------------------------------------------------------
+    */
+    Route::get('/pdf/sertifikat', [PdfController::class, 'sertifikat'])->name('pdf.sertifikat');
+    Route::get('/pdf/undangan', [PdfController::class, 'undangan'])->name('pdf.undangan');
 
     /*
     |--------------------------------------------------------------------------
@@ -98,7 +121,7 @@ Route::middleware('auth')->prefix('dashboard')->group(function () {
     |--------------------------------------------------------------------------
     */
     Route::get('/icons/font-awesome', function () {
-        return view('pages.icons.font-awesome');
+            return view('pages.icons.font-awesome');
     })->name('icons.fontawesome');
 
     /*

@@ -54,5 +54,9 @@
     </div>
 
     @include('partials.script')
+
+    {{-- ✅ INI YANG KURANG / SALAH SEBELUMNYA --}}
+    @stack('scripts')
+
   </body>
 </html>
