@@ -8,6 +8,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\GoogleAuthController;
 use App\Http\Controllers\OtpController;
 use App\Http\Controllers\PdfController; // ✅ TAMBAHAN
+use App\Http\Controllers\BarangController; // ✅ TAMBAHAN
 
 Auth::routes();
 
@@ -63,11 +64,16 @@ Route::middleware('auth')->prefix('dashboard')->group(function () {
 
     /*
     |--------------------------------------------------------------------------
-    | PDF Routes (Studi Kasus 2) ✅ TAMBAHAN
+    | PDF Routes (Studi Kasus 2)
     |--------------------------------------------------------------------------
     */
     Route::get('/pdf/sertifikat', [PdfController::class, 'sertifikat'])->name('pdf.sertifikat');
     Route::get('/pdf/undangan', [PdfController::class, 'undangan'])->name('pdf.undangan');
+
+    // ✅ TAMBAHAN: halaman gabungan untuk Sertifikat + Undangan
+    Route::get('/pdf', function () {
+        return view('pdf.index');
+    })->name('pdf.index');
 
     /*
     |--------------------------------------------------------------------------
@@ -121,7 +127,7 @@ Route::middleware('auth')->prefix('dashboard')->group(function () {
     |--------------------------------------------------------------------------
     */
     Route::get('/icons/font-awesome', function () {
-            return view('pages.icons.font-awesome');
+        return view('pages.icons.font-awesome');
     })->name('icons.fontawesome');
 
     /*
@@ -149,4 +155,27 @@ Route::middleware('auth')->prefix('dashboard')->group(function () {
     */
     Route::resource('kategori', KategoriController::class);
     Route::resource('buku', BukuController::class);
+
+    /*
+    |--------------------------------------------------------------------------
+    | 🔥 PENTING: Cetak Label HARUS DI ATAS resource barang
+    |--------------------------------------------------------------------------
+    */
+
+    // ✅ TAMBAHAN: handle request DELETE /dashboard/barang/cetak-label
+    // supaya TIDAK ketangkep oleh route resource: /dashboard/barang/{barang}
+    Route::delete('barang/cetak-label', [BarangController::class, 'cetakLabel'])
+        ->name('barang.cetakLabel.delete');
+
+    // Route kamu yang sudah ada (tetap dipertahankan)
+    Route::post('barang/cetak-label', [BarangController::class, 'cetakLabel'])
+        ->name('barang.cetakLabel');
+
+    /*
+    |--------------------------------------------------------------------------
+    | Tag Harga UMKM (CRUD Barang)
+    |--------------------------------------------------------------------------
+    */
+    Route::resource('barang', BarangController::class);
+
 });
