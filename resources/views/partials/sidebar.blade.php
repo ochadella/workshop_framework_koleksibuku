@@ -20,64 +20,52 @@
       </a>
     </li>
 
-    @php
-      $currentRoute = app('router')->currentRouteName();
-      $isDashboard  = $currentRoute === 'dashboard';
-      $isKategori   = str_starts_with((string)$currentRoute, 'kategori.');
-      $isBuku       = str_starts_with((string)$currentRoute, 'buku.');
-      $isBarang     = str_starts_with((string)$currentRoute, 'barang.');
-      $isPdfDocs    = in_array($currentRoute, ['pdf.index', 'pdf.sertifikat', 'pdf.undangan']);
-
-      $activeColor  = '#7c3aed';
-      $inactiveColor = '#9b9b9b';
-    @endphp
-
     <!-- DASHBOARD -->
-    <li class="nav-item {{ $isDashboard ? 'active' : '' }}">
+    <li class="nav-item {{ request()->routeIs('dashboard') ? 'active' : '' }}">
       <a class="nav-link" href="{{ route('dashboard') }}">
-        <span class="menu-title" style="color: {{ $isDashboard ? $activeColor : $inactiveColor }}">Dashboard</span>
-        <i class="mdi mdi-home menu-icon" style="color: {{ $isDashboard ? $activeColor : $inactiveColor }}"></i>
+        <span class="menu-title">Dashboard</span>
+        <i class="mdi mdi-home menu-icon"></i>
       </a>
     </li>
 
     <!-- KATEGORI -->
-    <li class="nav-item {{ $isKategori ? 'active' : '' }}">
+    <li class="nav-item {{ request()->routeIs('kategori.*') ? 'active' : '' }}">
       <a class="nav-link" href="{{ route('kategori.index') }}">
-        <span class="menu-title" style="color: {{ $isKategori ? $activeColor : $inactiveColor }}">Kategori</span>
-        <i class="mdi mdi-tag menu-icon" style="color: {{ $isKategori ? $activeColor : $inactiveColor }}"></i>
+        <span class="menu-title">Kategori</span>
+        <i class="mdi mdi-tag menu-icon"></i>
       </a>
     </li>
 
     <!-- BUKU -->
-    <li class="nav-item {{ $isBuku ? 'active' : '' }}">
+    <li class="nav-item {{ request()->routeIs('buku.*') ? 'active' : '' }}">
       <a class="nav-link" href="{{ route('buku.index') }}">
-        <span class="menu-title" style="color: {{ $isBuku ? $activeColor : $inactiveColor }}">Buku</span>
-        <i class="mdi mdi-book-open-page-variant menu-icon" style="color: {{ $isBuku ? $activeColor : $inactiveColor }}"></i>
+        <span class="menu-title">Buku</span>
+        <i class="mdi mdi-book-open-page-variant menu-icon"></i>
       </a>
     </li>
 
     <!-- BARANG -->
-    <li class="nav-item {{ $isBarang ? 'active' : '' }}">
+    <li class="nav-item {{ request()->routeIs('barang.*') ? 'active' : '' }}">
       <a class="nav-link" href="{{ route('barang.index') }}">
-        <span class="menu-title" style="color: {{ $isBarang ? $activeColor : $inactiveColor }}">Barang</span>
-        <i class="mdi mdi-barcode-scan menu-icon" style="color: {{ $isBarang ? $activeColor : $inactiveColor }}"></i>
+        <span class="menu-title">Barang</span>
+        <i class="mdi mdi-barcode-scan menu-icon"></i>
       </a>
     </li>
 
     <!-- DOKUMEN PDF -->
-    <li class="nav-item {{ $isPdfDocs ? 'active' : '' }}">
+    <li class="nav-item {{ request()->routeIs('pdf.*') ? 'active' : '' }}">
       <a class="nav-link" href="{{ route('pdf.index') }}">
-        <span class="menu-title" style="color: {{ $isPdfDocs ? $activeColor : $inactiveColor }}">Dokumen PDF</span>
-        <i class="mdi mdi-file-pdf-box menu-icon" style="color: {{ $isPdfDocs ? $activeColor : $inactiveColor }}"></i>
+        <span class="menu-title">Dokumen PDF</span>
+        <i class="mdi mdi-file-pdf-box menu-icon"></i>
       </a>
     </li>
 
     <!-- LOGOUT -->
     <li class="nav-item">
       <a class="nav-link" href="{{ route('logout') }}"
-        onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
-        <span class="menu-title" style="color: {{ $inactiveColor }}">Logout</span>
-        <i class="mdi mdi-logout menu-icon" style="color: {{ $inactiveColor }}"></i>
+         onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+        <span class="menu-title">Logout</span>
+        <i class="mdi mdi-logout menu-icon"></i>
       </a>
       <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">
         @csrf

@@ -25928,6 +25928,16 @@ dl li {
   background: transparent;
 }
 
+.sidebar .nav .nav-item:not(.active) > .nav-link .menu-title,
+.sidebar .nav .nav-item:not(.active) > .nav-link i {
+  color: #9b9b9b !important;
+}
+
+.sidebar .nav .nav-item.active > .nav-link .menu-title,
+.sidebar .nav .nav-item.active > .nav-link i {
+  color: #b66dff !important;
+}
+
 /* style for off-canvas menu*/
 @media screen and (max-width: 991px) {
   .sidebar-offcanvas {

@@ -12,50 +12,92 @@ var lightColor = getComputedStyle(document.body).getPropertyValue('--light');
   'use strict';
   $(function() {
     var body = $('body');
-    var contentWrapper = $('.content-wrapper');
-    var scroller = $('.container-scroller');
-    var footer = $('.footer');
     var sidebar = $('.sidebar');
 
-    //Add active class to nav-link based on url dynamically
-    //Active class can be hard coded directly in html file also as required
+    // =========================
+    // ACTIVE MENU: CLICK ONLY
+    // =========================
 
-    function addActiveClass(element) {
-      var href = element.attr('href');
-      if (!href || href === '#') return;
+    var STORAGE_KEY = 'sidebar_active_href';
 
-      var currentPath = location.pathname.replace(/\/$/, '');
-      var linkPath = href.split('?')[0].replace(/\/$/, '');
+    function isRealLink(href) {
+      return href && href !== '#' && !href.startsWith('javascript:');
+    }
 
-      // Exact match only - tidak pakai indexOf agar /dashboard tidak match /dashboard/kategori dll
-      if (currentPath === linkPath) {
-        element.parents('.nav-item').last().addClass('active');
-        if (element.parents('.sub-menu').length) {
-          element.closest('.collapse').addClass('show');
-          element.addClass('active');
-        }
-        if (element.parents('.submenu-item').length) {
-          element.addClass('active');
+    function clearAllActive() {
+      // bersihin semua kemungkinan active dari template bawaan
+      $('#sidebar .nav-item').removeClass('active');
+      $('#sidebar .nav-link').removeClass('active');
+      $('#sidebar .collapse').removeClass('show');
+    }
+
+    function setActiveByHref(href) {
+      if (!isRealLink(href)) return;
+
+      clearAllActive();
+
+      // cari link yang href-nya sama persis
+      var $link = $('#sidebar .nav-link[href="' + href.replace(/"/g, '\\"') + '"]');
+
+      // fallback: kalau href di DOM absolute vs relative, coba match pakai pathname
+      if (!$link.length) {
+        try {
+          var targetPath = new URL(href, window.location.origin).pathname.replace(/\/$/, '');
+          $('#sidebar .nav-link').each(function() {
+            var h = $(this).attr('href');
+            if (!isRealLink(h)) return;
+            var p = new URL(h, window.location.origin).pathname.replace(/\/$/, '');
+            if (p === targetPath) {
+              $link = $(this);
+              return false; // break
+            }
+          });
+        } catch (e) {}
+      }
+
+      if ($link && $link.length) {
+        $link.closest('.nav-item').addClass('active');
+
+        // kalau ada sub-menu/collapse, buka yang terkait
+        if ($link.parents('.sub-menu').length) {
+          $link.closest('.collapse').addClass('show');
+          $link.addClass('active');
         }
       }
     }
 
-    $('.nav li a', sidebar).each(function() {
-      var $this = $(this);
-      addActiveClass($this);
-    })
+    // 1) Override hasil template bawaan (kalau ada) setelah DOM ready
+    // pakai setTimeout supaya jalan "paling akhir"
+    setTimeout(function() {
+      clearAllActive();
 
-    $('.horizontal-menu .nav li a').each(function() {
-      var $this = $(this);
-      addActiveClass($this);
-    })
+      // 2) kalau mau persist setelah reload: restore dari localStorage
+      var savedHref = localStorage.getItem(STORAGE_KEY);
+      if (savedHref) {
+        setActiveByHref(savedHref);
+      }
+    }, 0);
 
-    //Close other submenu in sidebar on opening any
+    // 3) set active hanya saat klik
+    $(document).on('click', '#sidebar .nav-item .nav-link', function() {
+      var href = $(this).attr('href');
+      if (!isRealLink(href)) return;
+
+      localStorage.setItem(STORAGE_KEY, href);
+      setActiveByHref(href);
+      // tidak preventDefault, biar tetap navigasi normal
+    });
+
+    // =========================
+    // Close other submenu
+    // =========================
     sidebar.on('show.bs.collapse', '.collapse', function() {
       sidebar.find('.collapse.show').collapse('hide');
     });
 
-    //Change sidebar and content-wrapper height
+    // =========================
+    // applyStyles (as-is)
+    // =========================
     applyStyles();
 
     function applyStyles() {
@@ -80,12 +122,13 @@ var lightColor = getComputedStyle(document.body).getPropertyValue('--light');
       }
     });
 
-    //checkbox and radios
     $(".form-check label,.form-radio label").append('<i class="input-helper"></i>');
 
-    //fullscreen
     $("#fullscreen-button").on("click", function toggleFullScreen() {
-      if ((document.fullScreenElement !== undefined && document.fullScreenElement === null) || (document.msFullscreenElement !== undefined && document.msFullscreenElement === null) || (document.mozFullScreen !== undefined && !document.mozFullScreen) || (document.webkitIsFullScreen !== undefined && !document.webkitIsFullScreen)) {
+      if ((document.fullScreenElement !== undefined && document.fullScreenElement === null) ||
+          (document.msFullscreenElement !== undefined && document.msFullscreenElement === null) ||
+          (document.mozFullScreen !== undefined && !document.mozFullScreen) ||
+          (document.webkitIsFullScreen !== undefined && !document.webkitIsFullScreen)) {
         if (document.documentElement.requestFullScreen) {
           document.documentElement.requestFullScreen();
         } else if (document.documentElement.mozRequestFullScreen) {
@@ -106,7 +149,7 @@ var lightColor = getComputedStyle(document.body).getPropertyValue('--light');
           document.msExitFullscreen();
         }
       }
-    })
+    });
 
   });
 })(jQuery);
