@@ -1,102 +1,100 @@
 <!doctype html>
 <html lang="id">
 <head>
-<meta charset="utf-8">
-<title>Label Barang</title>
+  <meta charset="utf-8">
+  <title>Label Barang</title>
 
-<style>
-@page { size: A4 landscape; margin: 5mm; }
+  <style>
+    @page {
+      size: A4;
+      margin: 2mm;
+    }
 
-body {
-    margin: 0;
-    padding: 0;
-    font-family: DejaVu Sans, sans-serif;
-    font-size: 9pt;
-    line-height: 1.0;
-}
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: DejaVu Sans, sans-serif;
+      font-size: 13px;
+      line-height: 1.0;
+    }
 
-/* 5 kolom x 8 baris */
-table.sheet {
-    width: 100%;
-    border-collapse: collapse;
-    table-layout: fixed;
-    page-break-inside: avoid;
-}
+    table {
+      width: auto;
+      border-collapse: separate;
+      border-spacing: 3mm 2mm;
+    }
 
-/* ✅ td jangan pake padding/height “langsung” (DOMPDF suka ngembang).
-   Kita kunci tingginya lewat .box di dalamnya. */
-td.cell {
-    width: 20%;
-    padding: 0;
-    border: none;
-    vertical-align: top;
-}
-
-/* ✅ INI KUNCI UTAMA: tinggi 1 label dipaksa segini, jadi 8 baris pasti muat */
-.box {
-    height: 23mm;            /* ✅ kalau masih nyebrang, turunin jadi 24.0mm */
-    box-sizing: border-box;
-    overflow: hidden;
-    padding: 1mm;              /* padding pindah ke sini biar gak nambah tinggi td */
-}
-
-/* reset margin bawaan */
-.nama, .harga, .desk, .id {
-    margin: 0;
-    padding: 0;
-}
-
-.nama  { font-weight: bold; font-size: 10pt; }
-.harga { margin-top: 1mm; }
-.desk  { font-size: 8pt; }
-.id    { font-size: 7pt; margin-top: 1mm; }
-</style>
+    td {
+      width: 38mm;
+      height: 18mm;
+      text-align: center;
+      vertical-align: middle;
+      font-size: 10px;
+      padding: 0;
+      overflow: hidden;
+      box-sizing: border-box;
+    }
+  </style>
 </head>
 <body>
 
 @php
-$cols = 5;
-$rows = 8;
-$totalSlots = $cols * $rows;
+  $cols = 5;
+  $rows = 8;
 
-$x = max(1, min($cols, (int)$x));
-$y = max(1, min($rows, (int)$y));
+  $data = $barangs ?? [];
 
-$startIndex = (($y - 1) * $cols) + ($x - 1);
+  $x = isset($x) ? (int)$x : 1;
+  $y = isset($y) ? (int)$y : 1;
 
-$slots = array_fill(0, $totalSlots, null);
+  $x = max(1, min($cols, $x));
+  $y = max(1, min($rows, $y));
 
-$i = 0;
-for ($pos = $startIndex; $pos < $totalSlots; $pos++) {
-    if ($i >= count($barangs)) break;
-    $slots[$pos] = $barangs[$i];
-    $i++;
+  $kosong = (($y - 1) * $cols) + ($x - 1);
+@endphp
+
+<?php
+
+$total = 40;
+
+$isi = count($data) + $kosong;
+
+$sisa = $total - $isi;
+
+$semua = [];
+
+/* kosong awal */
+for ($i = 0; $i < $kosong; $i++) {
+    $semua[] = "";
 }
-@endphp
 
-<table class="sheet">
-@for ($r = 0; $r < $rows; $r++)
-<tr>
-@for ($c = 0; $c < $cols; $c++)
-@php
-$idx = ($r * $cols) + $c;
-$b = $slots[$idx];
-@endphp
-<td class="cell">
-  <div class="box">
-    @if($b)
-      <div class="nama">{{ $b->nama_barang }}</div>
-      <div class="harga">Rp {{ number_format($b->harga,0,',','.') }}</div>
-      <div class="desk">{{ $b->deskripsi }}</div>
-      <div class="id">{{ $b->id_barang }}</div>
-    @else
-      &nbsp;
-    @endif
-  </div>
-</td>
-@endfor
-</tr>
-@endfor
+/* isi barang */
+foreach ($data as $d) {
+    $semua[] = $d;
+}
+
+/* kosong akhir */
+for ($i = 0; $i < $sisa; $i++) {
+    $semua[] = "";
+}
+
+?>
+
+<table>
+  <?php for ($i = 0; $i < 40; $i += 5) { ?>
+    <tr>
+      <?php for ($j = 0; $j < 5; $j++) { ?>
+        <?php $index = $i + $j; ?>
+        <td>
+          <?php if ($semua[$index] != "") { ?>
+            <b><?php echo $semua[$index]->nama_barang; ?></b>
+            <br><br>
+            Rp <?php echo number_format($semua[$index]->harga, 0, ',', '.'); ?>
+          <?php } ?>
+        </td>
+      <?php } ?>
+    </tr>
+  <?php } ?>
 </table>
 
 </body>
