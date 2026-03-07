@@ -52,6 +52,14 @@
       </a>
     </li>
 
+    <!-- SELECT KOTA -->
+    <li class="nav-item {{ request()->is('dashboard/select-kota') ? 'active' : '' }}">
+      <a class="nav-link" href="{{ url('/dashboard/select-kota') }}">
+        <span class="menu-title">Select Kota</span>
+        <i class="mdi mdi-map-marker menu-icon"></i>
+      </a>
+    </li>
+
     <!-- DOKUMEN PDF -->
     <li class="nav-item {{ request()->routeIs('pdf.*') ? 'active' : '' }}">
       <a class="nav-link" href="{{ route('pdf.index') }}">

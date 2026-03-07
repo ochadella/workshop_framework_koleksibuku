@@ -173,6 +173,23 @@ Route::middleware('auth')->prefix('dashboard')->group(function () {
 
     /*
     |--------------------------------------------------------------------------
+    | Modul 4 - Javascript & jQuery
+    |--------------------------------------------------------------------------
+    */
+    Route::get('/form-html', function () {
+        return view('barang.form-html');
+    })->name('form-html');
+
+    Route::get('/form-datatables', function () {
+        return view('barang.form-datatables');
+    })->name('form-datatables');
+
+    Route::get('/select-kota', function () {
+        return view('barang.select-kota');
+    })->name('select-kota');
+
+    /*
+    |--------------------------------------------------------------------------
     | Tag Harga UMKM (CRUD Barang)
     |--------------------------------------------------------------------------
     */

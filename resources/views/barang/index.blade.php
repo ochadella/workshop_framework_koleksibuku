@@ -13,6 +13,9 @@
   /* DataTables biar rapi */
   .dataTables_wrapper .dataTables_filter input { margin-left: 8px; }
   .dataTables_wrapper .dataTables_length select { margin: 0 6px; }
+
+  /* ✅ TAMBAHAN: cursor pointer untuk row tabel */
+  #barangTable tbody tr { cursor: pointer; }
 </style>
 
 <!-- DataTables CSS (Bootstrap 4 friendly) -->
@@ -76,7 +79,7 @@
             <input type="number" name="y" class="form-control" value="1" min="1" max="8" required>
           </div>
           <div class="col-md-8 mb-2 d-flex gap-2">
-            <button type="submit" class="btn btn-success btn-sm">
+            <button type="submit" class="btn btn-success btn-sm" id="btnCetakLabel">
               <i class="mdi mdi-printer"></i> Cetak Label
             </button>
           </div>
@@ -122,10 +125,10 @@
                     Edit
                   </button>
 
-                  <form action="{{ url('dashboard/barang/'.$item->id) }}" method="POST" class="d-inline">
+                  <form action="{{ url('dashboard/barang/'.$item->id) }}" method="POST" class="d-inline form-hapus-barang">
                     @csrf
                     @method('DELETE')
-                    <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Hapus data?')">Hapus</button>
+                    <button type="submit" class="btn btn-sm btn-danger btn-hapus-barang" onclick="return confirm('Hapus data?')">Hapus</button>
                   </form>
                 </td>
               </tr>
@@ -181,6 +184,10 @@
 
       // ✅ Validasi: minimal pilih 1 item sebelum cetak
       $('#formCetakLabel').on('submit', function(e){
+        if ($(this).data('allow-submit') === true) {
+          return true;
+        }
+
         if ($('.checkItem:checked').length === 0) {
           e.preventDefault();
           alert('Pilih minimal 1 barang untuk dicetak.');
@@ -193,7 +200,7 @@
   <div class="modal fade" id="modalTambahBarang" tabindex="-1" role="dialog" aria-labelledby="modalTambahBarangLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered" role="document">
       <div class="modal-content">
-        <form action="{{ url('dashboard/barang') }}" method="POST">
+        <form action="{{ url('dashboard/barang') }}" method="POST" id="formTambahBarang">
           @csrf
           <div class="modal-header">
             <h5 class="modal-title" id="modalTambahBarangLabel">Tambah Barang</h5>
@@ -221,7 +228,7 @@
 
           <div class="modal-footer">
             <button type="button" class="btn btn-light" data-dismiss="modal">Batal</button>
-            <button type="submit" class="btn btn-gradient-primary">Simpan</button>
+            <button type="submit" class="btn btn-gradient-primary" id="btnSimpanTambahBarang">Simpan</button>
           </div>
         </form>
       </div>
@@ -262,7 +269,7 @@
 
           <div class="modal-footer">
             <button type="button" class="btn btn-light" data-dismiss="modal">Batal</button>
-            <button type="submit" class="btn btn-warning">Update</button>
+            <button type="submit" class="btn btn-warning" id="btnUpdateBarang">Update</button>
           </div>
         </form>
       </div>
@@ -281,6 +288,137 @@
       $('#editDeskripsiBarang').val(deskripsi);
 
       $('#formEditBarang').attr('action', "{{ url('dashboard/barang') }}/" + id);
+    });
+  </script>
+
+  {{-- ✅ TAMBAHAN: script implementasi modul tanpa menghapus script lama --}}
+  <script>
+    $(document).ready(function () {
+
+      function setLoadingButton($btn, loadingText) {
+        if (!$btn.data('original-html')) {
+          $btn.data('original-html', $btn.html());
+        }
+
+        $btn.prop('disabled', true);
+        $btn.html(
+          '<span class="spinner-border spinner-border-sm mr-2" role="status" aria-hidden="true"></span>' +
+          loadingText
+        );
+      }
+
+      function resetLoadingButton($btn) {
+        if ($btn.data('original-html')) {
+          $btn.prop('disabled', false);
+          $btn.html($btn.data('original-html'));
+        }
+      }
+
+      // ✅ Tambah Barang: validasi HTML5 + loading + delay agar spinner terlihat
+      $('#formTambahBarang').on('submit', function(e) {
+        var form = this;
+
+        if ($(form).data('allow-submit') === true) {
+          return true;
+        }
+
+        e.preventDefault();
+
+        if (!form.checkValidity()) {
+          form.reportValidity();
+          return false;
+        }
+
+        var $btn = $('#btnSimpanTambahBarang');
+        setLoadingButton($btn, 'Menyimpan...');
+
+        $(form).data('allow-submit', true);
+
+        setTimeout(function() {
+          HTMLFormElement.prototype.submit.call(form);
+        }, 1800);
+      });
+
+      // ✅ Edit Barang: validasi HTML5 + loading + delay agar spinner terlihat
+      $('#formEditBarang').on('submit', function(e) {
+        var form = this;
+
+        if ($(form).data('allow-submit') === true) {
+          return true;
+        }
+
+        e.preventDefault();
+
+        if (!form.checkValidity()) {
+          form.reportValidity();
+          return false;
+        }
+
+        var $btn = $('#btnUpdateBarang');
+        setLoadingButton($btn, 'Mengupdate...');
+
+        $(form).data('allow-submit', true);
+
+        setTimeout(function() {
+          HTMLFormElement.prototype.submit.call(form);
+        }, 1800);
+      });
+
+      // ✅ Cetak Label: validasi + loading + delay agar spinner terlihat jelas
+      $('#formCetakLabel').on('submit', function(e) {
+        var form = this;
+
+        if ($(form).data('allow-submit') === true) {
+          return true;
+        }
+
+        e.preventDefault();
+
+        if (!form.checkValidity()) {
+          form.reportValidity();
+          return false;
+        }
+
+        if ($('.checkItem:checked').length === 0) {
+          alert('Pilih minimal 1 barang untuk dicetak.');
+          return false;
+        }
+
+        var $btn = $('#btnCetakLabel');
+        setLoadingButton($btn, 'Memproses...');
+
+        $(form).data('allow-submit', true);
+
+        setTimeout(function() {
+          HTMLFormElement.prototype.submit.call(form);
+
+          setTimeout(function () {
+            resetLoadingButton($btn);
+            $(form).data('allow-submit', false);
+          }, 2500);
+        }, 1800);
+      });
+
+      // ✅ Hapus Barang: loading + delay agar spinner terlihat
+      $(document).on('submit', '.form-hapus-barang', function(e) {
+        var form = this;
+
+        if ($(form).data('allow-submit') === true) {
+          return true;
+        }
+
+        e.preventDefault();
+
+        var $btn = $(this).find('.btn-hapus-barang');
+        setLoadingButton($btn, 'Menghapus...');
+
+        $(form).data('allow-submit', true);
+
+        setTimeout(function() {
+          HTMLFormElement.prototype.submit.call(form);
+        }, 1800);
+      });
+
     });
   </script>
 
