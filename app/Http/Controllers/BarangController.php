@@ -3,7 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\Barang;
+use App\Models\Penjualan;
+use App\Models\PenjualanDetail;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Barryvdh\DomPDF\Facade\Pdf;
 
 class BarangController extends Controller
@@ -79,6 +82,82 @@ class BarangController extends Controller
 
         return redirect()->route('barang.index')
             ->with('success', 'Barang berhasil dihapus');
+    }
+
+    /**
+     * Ambil data barang berdasarkan kode untuk POS AJAX
+     */
+    public function getBarangByKode($kode)
+    {
+        $barang = Barang::where('id_barang', $kode)->first();
+
+        if (!$barang) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Barang tidak ditemukan'
+            ], 404);
+        }
+
+        return response()->json([
+            'status' => true,
+            'data' => [
+                'id_barang' => $barang->id_barang,
+                'nama_barang' => $barang->nama_barang,
+                'harga' => $barang->harga,
+                'deskripsi' => $barang->deskripsi,
+            ]
+        ]);
+    }
+
+    /**
+     * Simpan transaksi POS
+     */
+    public function simpanTransaksi(Request $request)
+    {
+        $request->validate([
+            'total' => 'required|numeric|min:1',
+            'items' => 'required|array|min:1',
+            'items.*.kode' => 'required|string',
+            'items.*.nama_barang' => 'required|string',
+            'items.*.harga' => 'required|numeric|min:0',
+            'items.*.jumlah' => 'required|integer|min:1',
+            'items.*.subtotal' => 'required|numeric|min:0',
+        ]);
+
+        DB::beginTransaction();
+
+        try {
+            $penjualan = Penjualan::create([
+                'tanggal' => now(),
+                'total' => $request->total,
+            ]);
+
+            foreach ($request->items as $item) {
+                PenjualanDetail::create([
+                    'penjualan_id' => $penjualan->id,
+                    'barang_id' => $item['kode'],
+                    'nama_barang' => $item['nama_barang'],
+                    'harga' => $item['harga'],
+                    'jumlah' => $item['jumlah'],
+                    'subtotal' => $item['subtotal'],
+                ]);
+            }
+
+            DB::commit();
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Transaksi berhasil disimpan',
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            return response()->json([
+                'status' => false,
+                'message' => 'Transaksi gagal disimpan',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
     }
 
     /**

@@ -60,6 +60,46 @@
       </a>
     </li>
 
+    <!-- WILAYAH AJAX -->
+    <li class="nav-item {{ request()->routeIs('wilayah.index') ? 'active' : '' }}">
+      <a class="nav-link" href="{{ route('wilayah.index') }}">
+        <span class="menu-title">Wilayah AJAX</span>
+        <i class="mdi mdi-google-maps menu-icon"></i>
+      </a>
+    </li>
+
+    <!-- WILAYAH AXIOS -->
+    <li class="nav-item {{ request()->routeIs('wilayah.axios') ? 'active' : '' }}">
+      <a class="nav-link" href="{{ route('wilayah.axios') }}">
+        <span class="menu-title">Wilayah Axios</span>
+        <i class="mdi mdi-map-plus menu-icon"></i>
+      </a>
+    </li>
+
+    <!-- POS AJAX -->
+    <li class="nav-item {{ request()->routeIs('pos.index') ? 'active' : '' }}">
+      <a class="nav-link" href="{{ route('pos.index') }}">
+        <span class="menu-title">POS AJAX</span>
+        <i class="mdi mdi-cash-register menu-icon"></i>
+      </a>
+    </li>
+
+    <!-- POS AXIOS -->
+    <li class="nav-item {{ request()->routeIs('pos.axios') ? 'active' : '' }}">
+      <a class="nav-link" href="{{ route('pos.axios') }}">
+        <span class="menu-title">POS Axios</span>
+        <i class="mdi mdi-cash-multiple menu-icon"></i>
+      </a>
+    </li>
+
+    <!-- RIWAYAT TRANSAKSI -->
+    <li class="nav-item {{ request()->routeIs('transaksi.*') ? 'active' : '' }}">
+      <a class="nav-link" href="{{ route('transaksi.index') }}">
+        <span class="menu-title">Riwayat Transaksi</span>
+        <i class="mdi mdi-history menu-icon"></i>
+      </a>
+    </li>
+
     <!-- DOKUMEN PDF -->
     <li class="nav-item {{ request()->routeIs('pdf.*') ? 'active' : '' }}">
       <a class="nav-link" href="{{ route('pdf.index') }}">

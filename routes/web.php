@@ -9,6 +9,8 @@ use App\Http\Controllers\GoogleAuthController;
 use App\Http\Controllers\OtpController;
 use App\Http\Controllers\PdfController; // ✅ TAMBAHAN
 use App\Http\Controllers\BarangController; // ✅ TAMBAHAN
+use App\Http\Controllers\WilayahController; // ✅ TAMBAHAN MODUL 5
+use App\Http\Controllers\TransaksiController; // ✅ TAMBAHAN RIWAYAT TRANSAKSI
 
 Auth::routes();
 
@@ -18,12 +20,10 @@ Auth::routes();
 |--------------------------------------------------------------------------
 */
 Route::get('/', function () {
-    // Kalau sudah login, langsung ke dashboard
     if (auth()->check()) {
         return redirect()->route('dashboard');
     }
 
-    // Kalau belum login, tampilkan welcome (resources/views/welcome.blade.php)
     return view('welcome');
 });
 
@@ -38,7 +38,7 @@ Route::get('/home', function () {
 
 /*
 |--------------------------------------------------------------------------
-| Google Login + OTP (di luar auth middleware, karena user belum login)
+| Google Login + OTP
 |--------------------------------------------------------------------------
 */
 Route::get('/auth/google', [GoogleAuthController::class, 'redirect'])->name('google.login');
@@ -50,27 +50,26 @@ Route::post('/otp', [OtpController::class, 'verify'])->name('otp.verify');
 
 /*
 |--------------------------------------------------------------------------
-| Authenticated Pages (prefix /dashboard)
+| Authenticated Pages
 |--------------------------------------------------------------------------
 */
 Route::middleware('auth')->prefix('dashboard')->group(function () {
 
     /*
     |--------------------------------------------------------------------------
-    | Dashboard (pakai controller)
+    | Dashboard
     |--------------------------------------------------------------------------
     */
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
 
     /*
     |--------------------------------------------------------------------------
-    | PDF Routes (Studi Kasus 2)
+    | PDF Routes
     |--------------------------------------------------------------------------
     */
     Route::get('/pdf/sertifikat', [PdfController::class, 'sertifikat'])->name('pdf.sertifikat');
     Route::get('/pdf/undangan', [PdfController::class, 'undangan'])->name('pdf.undangan');
 
-    // ✅ TAMBAHAN: halaman gabungan untuk Sertifikat + Undangan
     Route::get('/pdf', function () {
         return view('pdf.index');
     })->name('pdf.index');
@@ -141,7 +140,7 @@ Route::middleware('auth')->prefix('dashboard')->group(function () {
 
     /*
     |--------------------------------------------------------------------------
-    | Welcome Page (di dalam dashboard + auth)
+    | Welcome Page
     |--------------------------------------------------------------------------
     */
     Route::get('/welcome', function () {
@@ -158,16 +157,12 @@ Route::middleware('auth')->prefix('dashboard')->group(function () {
 
     /*
     |--------------------------------------------------------------------------
-    | 🔥 PENTING: Cetak Label HARUS DI ATAS resource barang
+    | Cetak Label Barang
     |--------------------------------------------------------------------------
     */
-
-    // ✅ TAMBAHAN: handle request DELETE /dashboard/barang/cetak-label
-    // supaya TIDAK ketangkep oleh route resource: /dashboard/barang/{barang}
     Route::delete('barang/cetak-label', [BarangController::class, 'cetakLabel'])
         ->name('barang.cetakLabel.delete');
 
-    // Route kamu yang sudah ada (tetap dipertahankan)
     Route::post('barang/cetak-label', [BarangController::class, 'cetakLabel'])
         ->name('barang.cetakLabel');
 
@@ -187,6 +182,54 @@ Route::middleware('auth')->prefix('dashboard')->group(function () {
     Route::get('/select-kota', function () {
         return view('barang.select-kota');
     })->name('select-kota');
+
+    /*
+    |--------------------------------------------------------------------------
+    | Modul 5 - Cascading Wilayah
+    |--------------------------------------------------------------------------
+    */
+    Route::get('/wilayah', [WilayahController::class, 'index'])->name('wilayah.index');
+
+    // ✅ TAMBAHAN: versi Axios
+    Route::get('/wilayah-axios', function () {
+        return view('wilayah.axios');
+    })->name('wilayah.axios');
+
+    Route::get('/get-provinces', [WilayahController::class, 'getProvinces']);
+    Route::get('/get-cities/{province}', [WilayahController::class, 'getCities']);
+    Route::get('/get-districts/{city}', [WilayahController::class, 'getDistricts']);
+    Route::get('/get-villages/{district}', [WilayahController::class, 'getVillages']);
+
+    /*
+    |--------------------------------------------------------------------------
+    | Modul 5 - POS AJAX
+    |--------------------------------------------------------------------------
+    */
+    Route::get('/pos', function () {
+        return view('pos.index');
+    })->name('pos.index');
+
+    // ✅ TAMBAHAN: versi Axios
+    Route::get('/pos-axios', function () {
+        return view('pos.axios');
+    })->name('pos.axios');
+
+    Route::get('/get-barang/{kode}', [BarangController::class, 'getBarangByKode'])
+        ->name('barang.getByKode');
+
+    Route::post('/pos/simpan', [BarangController::class, 'simpanTransaksi'])
+        ->name('pos.simpan');
+
+    /*
+    |--------------------------------------------------------------------------
+    | Riwayat Transaksi
+    |--------------------------------------------------------------------------
+    */
+    Route::get('/transaksi', [TransaksiController::class, 'index'])->name('transaksi.index');
+    Route::get('/transaksi/{id}', [TransaksiController::class, 'show'])->name('transaksi.show');
+
+    // ✅ TAMBAHAN: Cetak Struk PDF
+    Route::get('/transaksi/{id}/struk', [TransaksiController::class, 'cetakStruk'])->name('transaksi.struk');
 
     /*
     |--------------------------------------------------------------------------

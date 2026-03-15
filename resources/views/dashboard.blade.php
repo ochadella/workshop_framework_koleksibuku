@@ -55,6 +55,63 @@
   </div>
 
   <div class="row">
+    <div class="col-md-3 stretch-card grid-margin">
+      <div class="card bg-gradient-dark card-img-holder text-white">
+        <div class="card-body">
+          <img src="{{ asset('images/dashboard/circle.svg') }}" class="card-img-absolute" alt="circle-image" />
+          <h4 class="font-weight-normal mb-3">Total Barang <i class="mdi mdi-barcode-scan mdi-24px float-end"></i></h4>
+          <h2 class="mb-5">{{ $totalBarang ?? 0 }}</h2>
+          <h6 class="card-text">Jumlah semua data barang</h6>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-3 stretch-card grid-margin">
+      <div class="card bg-gradient-primary card-img-holder text-white">
+        <div class="card-body">
+          <img src="{{ asset('images/dashboard/circle.svg') }}" class="card-img-absolute" alt="circle-image" />
+          <h4 class="font-weight-normal mb-3">Transaksi Hari Ini <i class="mdi mdi-receipt mdi-24px float-end"></i></h4>
+          <h2 class="mb-5">{{ $totalTransaksiHariIni ?? 0 }}</h2>
+          <h6 class="card-text">Jumlah transaksi hari ini</h6>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-3 stretch-card grid-margin">
+      <div class="card bg-gradient-warning card-img-holder text-white">
+        <div class="card-body">
+          <img src="{{ asset('images/dashboard/circle.svg') }}" class="card-img-absolute" alt="circle-image" />
+          <h4 class="font-weight-normal mb-3">Omzet Hari Ini <i class="mdi mdi-cash-multiple mdi-24px float-end"></i></h4>
+          <h2 class="mb-5">Rp {{ number_format($totalOmzetHariIni ?? 0, 0, ',', '.') }}</h2>
+          <h6 class="card-text">Total pemasukan hari ini</h6>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-3 stretch-card grid-margin">
+      <div class="card bg-gradient-secondary card-img-holder text-white">
+        <div class="card-body">
+          <img src="{{ asset('images/dashboard/circle.svg') }}" class="card-img-absolute" alt="circle-image" />
+          <h4 class="font-weight-normal mb-3">Item Terjual Hari Ini <i class="mdi mdi-cart mdi-24px float-end"></i></h4>
+          <h2 class="mb-5">{{ $jumlahItemTerjualHariIni ?? 0 }}</h2>
+          <h6 class="card-text">Total barang terjual hari ini</h6>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+  <div class="col-md-6 grid-margin stretch-card">
+    <div class="card">
+      <div class="card-body">
+        <h4 class="card-title">Grafik Omzet 7 Hari Terakhir</h4>
+        <canvas id="sales-7days-chart" class="mt-3"></canvas>
+      </div>
+    </div>
+  </div>
+  </div>
+
+  <div class="row">
     <div class="col-md-7 grid-margin stretch-card">
       <div class="card">
         <div class="card-body">
@@ -121,11 +178,20 @@
 @endsection
 
 @push('scripts')
+  <style>
+  #sales-7days-chart {
+    height: 220px !important;
+    max-height: 220px !important;
+  }
+</style>
+
   <script>
     window.dashboardData = {
       bukuPerBulan: @json(array_values($bukuPerBulan ?? [])),
       kategoriLabels: @json($kategoriLabels ?? []),
-      kategoriTotals: @json($kategoriTotals ?? [])
+      kategoriTotals: @json($kategoriTotals ?? []),
+      penjualan7HariLabels: @json($penjualan7HariLabels ?? []),
+      penjualan7HariTotals: @json($penjualan7HariTotals ?? [])
     };
   </script>
 

@@ -1,7 +1,8 @@
 (function ($) {
   'use strict';
+
   if ($("#visit-sale-chart").length) {
-    const ctx = document.getElementById('visit-sale-chart').getContext('2d'); // ✅ FIX: pakai context 2d
+    const ctx = document.getElementById('visit-sale-chart').getContext('2d');
 
     var graphGradient1 = document.getElementById('visit-sale-chart').getContext("2d");
     var graphGradient2 = document.getElementById('visit-sale-chart').getContext("2d");
@@ -22,16 +23,21 @@
     gradientStrokeRed.addColorStop(1, 'rgba(254, 112, 150, 1)');
     var gradientLegendRed = 'linear-gradient(to right, rgba(255, 191, 150, 1), rgba(254, 112, 150, 1))';
 
-    const bgColor1 = "rgba(218, 140, 255, 1)"; // ✅ FIX: string biar legend aman
-    const bgColor2 = "rgba(54, 215, 232, 1)";  // ✅ FIX: string + sebelumnya kamu udah benerin syntax
-    const bgColor3 = "rgba(255, 191, 150, 1)"; // ✅ FIX: string biar legend aman
+    const bgColor1 = "rgba(218, 140, 255, 1)";
+    const bgColor2 = "rgba(54, 215, 232, 1)";
+    const bgColor3 = "rgba(255, 191, 150, 1)";
+
+    const bulanLabels = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
+    const bukuPerBulanData = (window.dashboardData && window.dashboardData.bukuPerBulan)
+      ? window.dashboardData.bukuPerBulan
+      : [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
 
     new Chart(ctx, {
       type: 'bar',
       data: {
-        labels: ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG'],
+        labels: bulanLabels,
         datasets: [{
-          label: "CHN",
+          label: "Jumlah Buku",
           borderColor: gradientStrokeViolet,
           backgroundColor: gradientStrokeViolet,
           fillColor: bgColor1,
@@ -39,40 +45,10 @@
           pointRadius: 0,
           fill: false,
           borderWidth: 1,
-          fill: 'origin',
-          data: [20, 40, 15, 35, 25, 50, 30, 20],
+          data: bukuPerBulanData,
           barPercentage: 0.5,
           categoryPercentage: 0.5,
-        },
-        {
-          label: "USA",
-          borderColor: gradientStrokeRed,
-          backgroundColor: gradientStrokeRed,
-          hoverBackgroundColor: gradientStrokeRed,
-          fillColor: bgColor2,
-          pointRadius: 0,
-          fill: false,
-          borderWidth: 1,
-          fill: 'origin',
-          data: [40, 30, 20, 10, 50, 15, 35, 40],
-          barPercentage: 0.5,
-          categoryPercentage: 0.5,
-        },
-        {
-          label: "UK",
-          borderColor: gradientStrokeBlue,
-          backgroundColor: gradientStrokeBlue,
-          hoverBackgroundColor: gradientStrokeBlue,
-          fillColor: bgColor3,
-          pointRadius: 0,
-          fill: false,
-          borderWidth: 1,
-          fill: 'origin',
-          data: [70, 10, 30, 40, 25, 50, 15, 30],
-          barPercentage: 0.5,
-          categoryPercentage: 0.5,
-        }
-        ]
+        }]
       },
       options: {
         responsive: true,
@@ -105,13 +81,13 @@
         }
       },
       plugins: [{
-        afterUpdate: function (chart) { // ✅ FIX: hook lebih aman daripada afterDatasetUpdate
+        afterUpdate: function (chart) {
           const chartId = chart.canvas.id;
           const legendId = `${chartId}-legend`;
           const legendEl = document.getElementById(legendId);
 
-          if (!legendEl) return; // ✅ FIX: cegah error kalau element ga ada
-          legendEl.innerHTML = ""; // ✅ FIX: biar legend ga numpuk
+          if (!legendEl) return;
+          legendEl.innerHTML = "";
 
           const ul = document.createElement('ul');
           for (let i = 0; i < chart.data.datasets.length; i++) {
@@ -129,11 +105,13 @@
   }
 
   if ($("#traffic-chart").length) {
-    const ctx = document.getElementById('traffic-chart').getContext('2d'); // ✅ FIX: pakai context 2d
+    const ctx = document.getElementById('traffic-chart').getContext('2d');
 
     var graphGradient1 = document.getElementById("traffic-chart").getContext('2d');
     var graphGradient2 = document.getElementById("traffic-chart").getContext('2d');
     var graphGradient3 = document.getElementById("traffic-chart").getContext('2d');
+    var graphGradient4 = document.getElementById("traffic-chart").getContext('2d');
+    var graphGradient5 = document.getElementById("traffic-chart").getContext('2d');
 
     var gradientStrokeBlue = graphGradient1.createLinearGradient(0, 0, 0, 181);
     gradientStrokeBlue.addColorStop(0, 'rgba(54, 215, 232, 1)');
@@ -150,28 +128,50 @@
     gradientStrokeGreen.addColorStop(1, 'rgba(132, 217, 210, 1)');
     var gradientLegendGreen = 'rgba(6, 185, 157, 1)';
 
+    var gradientStrokeYellow = graphGradient4.createLinearGradient(0, 0, 0, 300);
+    gradientStrokeYellow.addColorStop(0, 'rgba(255, 206, 86, 1)');
+    gradientStrokeYellow.addColorStop(1, 'rgba(255, 159, 64, 1)');
+    var gradientLegendYellow = 'rgba(255, 159, 64, 1)';
+
+    var gradientStrokePurple = graphGradient5.createLinearGradient(0, 0, 0, 300);
+    gradientStrokePurple.addColorStop(0, 'rgba(153, 102, 255, 1)');
+    gradientStrokePurple.addColorStop(1, 'rgba(201, 203, 207, 1)');
+    var gradientLegendPurple = 'rgba(153, 102, 255, 1)';
+
+    const kategoriLabels = (window.dashboardData && window.dashboardData.kategoriLabels)
+      ? window.dashboardData.kategoriLabels
+      : ['Belum Ada Data'];
+
+    const kategoriTotals = (window.dashboardData && window.dashboardData.kategoriTotals)
+      ? window.dashboardData.kategoriTotals
+      : [1];
+
+    const chartColors = [
+      gradientStrokeBlue,
+      gradientStrokeGreen,
+      gradientStrokeRed,
+      gradientStrokeYellow,
+      gradientStrokePurple
+    ];
+
+    const legendColors = [
+      gradientLegendBlue,
+      gradientLegendGreen,
+      gradientLegendRed,
+      gradientLegendYellow,
+      gradientLegendPurple
+    ];
+
     new Chart(ctx, {
       type: 'doughnut',
       data: {
-        labels: ['Search Engines 30%', 'Direct Click 30%', 'Bookmarks Click 40%'],
+        labels: kategoriLabels,
         datasets: [{
-          data: [30, 30, 40],
-          backgroundColor: [gradientStrokeBlue, gradientStrokeGreen, gradientStrokeRed],
-          hoverBackgroundColor: [
-            gradientStrokeBlue,
-            gradientStrokeGreen,
-            gradientStrokeRed
-          ],
-          borderColor: [
-            gradientStrokeBlue,
-            gradientStrokeGreen,
-            gradientStrokeRed
-          ],
-          legendColor: [
-            gradientLegendBlue,
-            gradientLegendGreen,
-            gradientLegendRed
-          ]
+          data: kategoriTotals,
+          backgroundColor: kategoriTotals.map((_, index) => chartColors[index % chartColors.length]),
+          hoverBackgroundColor: kategoriTotals.map((_, index) => chartColors[index % chartColors.length]),
+          borderColor: kategoriTotals.map((_, index) => chartColors[index % chartColors.length]),
+          legendColor: kategoriTotals.map((_, index) => legendColors[index % legendColors.length])
         }]
       },
       options: {
@@ -190,13 +190,13 @@
         }
       },
       plugins: [{
-        afterUpdate: function (chart) { // ✅ FIX: hook lebih aman
+        afterUpdate: function (chart) {
           const chartId = chart.canvas.id;
           const legendId = `${chartId}-legend`;
           const legendEl = document.getElementById(legendId);
 
-          if (!legendEl) return; // ✅ FIX
-          legendEl.innerHTML = ""; // ✅ FIX: biar ga numpuk
+          if (!legendEl) return;
+          legendEl.innerHTML = "";
 
           const ul = document.createElement('ul');
           for (let i = 0; i < chart.data.datasets[0].data.length; i++) {
@@ -213,40 +213,142 @@
     });
   }
 
+  if ($("#sales-7days-chart").length) {
+    const ctx = document.getElementById('sales-7days-chart').getContext('2d');
+
+    var graphGradient = document.getElementById('sales-7days-chart').getContext("2d");
+    var gradientStrokeSales = graphGradient.createLinearGradient(0, 0, 0, 180);
+    gradientStrokeSales.addColorStop(0, 'rgba(54, 215, 232, 1)');
+    gradientStrokeSales.addColorStop(1, 'rgba(177, 148, 250, 1)');
+
+    const penjualan7HariLabels = (window.dashboardData && window.dashboardData.penjualan7HariLabels)
+      ? window.dashboardData.penjualan7HariLabels
+      : [];
+
+    const penjualan7HariTotals = (window.dashboardData && window.dashboardData.penjualan7HariTotals)
+      ? window.dashboardData.penjualan7HariTotals
+      : [];
+
+    new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: penjualan7HariLabels,
+        datasets: [{
+          label: 'Omzet',
+          data: penjualan7HariTotals,
+          borderColor: gradientStrokeSales,
+          backgroundColor: 'rgba(177, 148, 250, 0.12)',
+          pointBackgroundColor: 'rgba(54, 215, 232, 1)',
+          pointBorderColor: '#fff',
+          pointHoverBackgroundColor: '#fff',
+          pointHoverBorderColor: 'rgba(54, 215, 232, 1)',
+          pointRadius: 3,
+          pointHoverRadius: 4,
+          borderWidth: 2,
+          fill: true,
+          tension: 0.3
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        animation: false,
+        plugins: {
+          legend: {
+            display: false
+          }
+        },
+        elements: {
+          line: {
+            tension: 0.3
+          }
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            ticks: {
+              maxTicksLimit: 4,
+              callback: function(value) {
+                return 'Rp ' + value.toLocaleString('id-ID');
+              }
+            },
+            grid: {
+              drawBorder: false
+            }
+          },
+          x: {
+            grid: {
+              display: false
+            },
+            ticks: {
+              maxRotation: 0,
+              autoSkip: true
+            }
+          }
+        }
+      }
+    });
+  }
+
   if ($("#inline-datepicker").length) {
     $('#inline-datepicker').datepicker({
       enableOnReadonly: true,
       todayHighlight: true,
     });
   }
+
   if ($.cookie('purple-pro-banner') != "true") {
-    document.querySelector('#proBanner').classList.add('d-flex');
-    document.querySelector('.navbar').classList.remove('fixed-top');
+    if (document.querySelector('#proBanner')) {
+      document.querySelector('#proBanner').classList.add('d-flex');
+    }
+    if (document.querySelector('.navbar')) {
+      document.querySelector('.navbar').classList.remove('fixed-top');
+    }
   } else {
-    document.querySelector('#proBanner').classList.add('d-none');
-    document.querySelector('.navbar').classList.add('fixed-top');
+    if (document.querySelector('#proBanner')) {
+      document.querySelector('#proBanner').classList.add('d-none');
+    }
+    if (document.querySelector('.navbar')) {
+      document.querySelector('.navbar').classList.add('fixed-top');
+    }
   }
 
   if ($(".navbar").hasClass("fixed-top")) {
-    document.querySelector('.page-body-wrapper').classList.remove('pt-0');
-    document.querySelector('.navbar').classList.remove('pt-5');
+    if (document.querySelector('.page-body-wrapper')) {
+      document.querySelector('.page-body-wrapper').classList.remove('pt-0');
+    }
+    if (document.querySelector('.navbar')) {
+      document.querySelector('.navbar').classList.remove('pt-5');
+    }
   } else {
-    document.querySelector('.page-body-wrapper').classList.add('pt-0');
-    document.querySelector('.navbar').classList.add('pt-5');
-    document.querySelector('.navbar').classList.add('mt-3');
-
+    if (document.querySelector('.page-body-wrapper')) {
+      document.querySelector('.page-body-wrapper').classList.add('pt-0');
+    }
+    if (document.querySelector('.navbar')) {
+      document.querySelector('.navbar').classList.add('pt-5');
+      document.querySelector('.navbar').classList.add('mt-3');
+    }
   }
-  document.querySelector('#bannerClose').addEventListener('click', function () {
-    document.querySelector('#proBanner').classList.add('d-none');
-    document.querySelector('#proBanner').classList.remove('d-flex');
-    document.querySelector('.navbar').classList.remove('pt-5');
-    document.querySelector('.navbar').classList.add('fixed-top');
-    document.querySelector('.page-body-wrapper').classList.add('proBanner-padding-top');
-    document.querySelector('.navbar').classList.remove('mt-3');
-    var date = new Date();
-    date.setTime(date.getTime() + 24 * 60 * 60 * 1000);
-    $.cookie('purple-pro-banner', "true", {
-      expires: date
+
+  if (document.querySelector('#bannerClose')) {
+    document.querySelector('#bannerClose').addEventListener('click', function () {
+      if (document.querySelector('#proBanner')) {
+        document.querySelector('#proBanner').classList.add('d-none');
+        document.querySelector('#proBanner').classList.remove('d-flex');
+      }
+      if (document.querySelector('.navbar')) {
+        document.querySelector('.navbar').classList.remove('pt-5');
+        document.querySelector('.navbar').classList.add('fixed-top');
+        document.querySelector('.navbar').classList.remove('mt-3');
+      }
+      if (document.querySelector('.page-body-wrapper')) {
+        document.querySelector('.page-body-wrapper').classList.add('proBanner-padding-top');
+      }
+      var date = new Date();
+      date.setTime(date.getTime() + 24 * 60 * 60 * 1000);
+      $.cookie('purple-pro-banner', "true", {
+        expires: date
+      });
     });
-  });
+  }
 })(jQuery);

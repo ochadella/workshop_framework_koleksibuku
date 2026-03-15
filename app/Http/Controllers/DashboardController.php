@@ -5,16 +5,31 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Buku;
 use App\Models\Kategori;
+use App\Models\Barang;
+use App\Models\Penjualan;
+use App\Models\PenjualanDetail;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 
 class DashboardController extends Controller
 {
     public function index(){
-        // Card stats
+        // Card stats lama
         $totalBuku = Buku::count();
         $totalKategori = Kategori::count();
         $buku7Hari = Buku::where('created_at', '>=', Carbon::now()->subDays(7))->count();
+
+        // Tambahan dashboard penjualan
+        $totalBarang = Barang::count();
+
+        $totalTransaksiHariIni = Penjualan::whereDate('tanggal', Carbon::today())->count();
+
+        $totalOmzetHariIni = Penjualan::whereDate('tanggal', Carbon::today())
+            ->sum('total');
+
+        $jumlahItemTerjualHariIni = PenjualanDetail::whereHas('penjualan', function ($query) {
+            $query->whereDate('tanggal', Carbon::today());
+        })->sum('jumlah');
 
         // Recent books untuk table
         $recentBooks = Buku::with('kategori')
@@ -31,7 +46,6 @@ class DashboardController extends Controller
             ->orderBy('bulan')
             ->get();
 
-        // bikin array 12 bulan default 0
         $bukuPerBulan = array_fill(1, 12, 0);
         foreach ($bukuPerBulanRaw as $row) {
             $bukuPerBulan[(int)$row->bulan] = (int)$row->total;
@@ -48,14 +62,32 @@ class DashboardController extends Controller
         $kategoriLabels = $topKategori->pluck('nama_kategori')->toArray();
         $kategoriTotals = $topKategori->pluck('total')->map(fn ($v) => (int)$v)->toArray();
 
+        // Chart 3: Omzet penjualan 7 hari terakhir
+        $penjualan7HariLabels = [];
+        $penjualan7HariTotals = [];
+
+        for ($i = 6; $i >= 0; $i--) {
+            $tanggal = Carbon::today()->subDays($i);
+            $penjualan7HariLabels[] = $tanggal->format('d M');
+
+            $totalHarian = Penjualan::whereDate('tanggal', $tanggal)->sum('total');
+            $penjualan7HariTotals[] = (int) $totalHarian;
+        }
+
         return view('dashboard', compact(
             'totalBuku',
             'totalKategori',
             'buku7Hari',
+            'totalBarang',
+            'totalTransaksiHariIni',
+            'totalOmzetHariIni',
+            'jumlahItemTerjualHariIni',
             'recentBooks',
             'bukuPerBulan',
             'kategoriLabels',
             'kategoriTotals',
+            'penjualan7HariLabels',
+            'penjualan7HariTotals',
             'tahun'
         ));
     }
