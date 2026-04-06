@@ -80,6 +80,10 @@
 </div>
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script
+    src="https://app.sandbox.midtrans.com/snap/snap.js"
+    data-client-key="{{ env('MIDTRANS_CLIENT_KEY') }}"></script>
+
 <script>
 $(function () {
     function resetForm() {
@@ -245,14 +249,45 @@ $(function () {
                 items: items
             },
             success: function (response) {
-                alert(response.message);
-                $('#tabel-transaksi tbody').html('');
-                hitungTotal();
-                resetForm();
+                if (response.snap_token) {
+                    snap.pay(response.snap_token, {
+                        onSuccess: function(result) {
+                            alert('Pembayaran berhasil');
+                            $('#tabel-transaksi tbody').html('');
+                            hitungTotal();
+                            resetForm();
+                        },
+                        onPending: function(result) {
+                            alert('Pembayaran pending, silakan selesaikan pembayaran');
+                        },
+                        onError: function(result) {
+                            alert('Pembayaran gagal');
+                        },
+                        onClose: function() {
+                            alert('Popup pembayaran ditutup');
+                        }
+                    });
+                } else {
+                    alert(response.message + (response.error ? '\n' + response.error : ''));
+                    $('#tabel-transaksi tbody').html('');
+                    hitungTotal();
+                    resetForm();
+                }
             },
             error: function (xhr) {
                 console.log(xhr.responseText);
-                alert('Gagal menyimpan transaksi');
+
+                let pesan = 'Gagal menyimpan transaksi';
+
+                if (xhr.responseJSON) {
+                    if (xhr.responseJSON.error) {
+                        pesan += '\n' + xhr.responseJSON.error;
+                    } else if (xhr.responseJSON.message) {
+                        pesan += '\n' + xhr.responseJSON.message;
+                    }
+                }
+
+                alert(pesan);
             }
         });
     });

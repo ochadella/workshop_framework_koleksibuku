@@ -92,6 +92,14 @@
       </a>
     </li>
 
+    <!-- PEMESANAN KANTIN -->
+    <li class="nav-item {{ request()->routeIs('customer.pesan') ? 'active' : '' }}">
+      <a class="nav-link" href="{{ route('customer.pesan') }}">
+        <span class="menu-title">Pemesanan Kantin</span>
+        <i class="mdi mdi-food menu-icon"></i>
+      </a>
+    </li>
+
     <!-- RIWAYAT TRANSAKSI -->
     <li class="nav-item {{ request()->routeIs('transaksi.*') ? 'active' : '' }}">
       <a class="nav-link" href="{{ route('transaksi.index') }}">

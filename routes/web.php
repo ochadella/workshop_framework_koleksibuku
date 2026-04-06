@@ -50,6 +50,28 @@ Route::post('/otp', [OtpController::class, 'verify'])->name('otp.verify');
 
 /*
 |--------------------------------------------------------------------------
+| Callback Midtrans
+|--------------------------------------------------------------------------
+*/
+Route::post('/midtrans/callback', [TransaksiController::class, 'callback'])->name('midtrans.callback');
+
+/*
+|--------------------------------------------------------------------------
+| Customer Page (Tanpa Login)
+|--------------------------------------------------------------------------
+*/
+Route::get('/pesan', function () {
+    return view('customer.pesan');
+})->name('customer.pesan');
+
+Route::post('/pesan/checkout', [BarangController::class, 'checkoutCustomer'])
+    ->name('customer.checkout');
+
+Route::post('/pesan/check-status', [TransaksiController::class, 'checkStatus'])
+    ->name('customer.checkStatus');
+
+/*
+|--------------------------------------------------------------------------
 | Authenticated Pages
 |--------------------------------------------------------------------------
 */

@@ -27,6 +27,7 @@
                                 <th>No</th>
                                 <th>Tanggal</th>
                                 <th>Total</th>
+                                <th>Status Pembayaran</th>
                                 <th>Aksi</th>
                             </tr>
                         </thead>
@@ -37,6 +38,17 @@
                                     <td>{{ \Carbon\Carbon::parse($trx->tanggal)->format('d-m-Y H:i:s') }}</td>
                                     <td>Rp {{ number_format($trx->total, 0, ',', '.') }}</td>
                                     <td>
+                                        @if($trx->status_pembayaran == 'paid')
+                                            <span class="badge badge-success">Paid</span>
+                                        @elseif($trx->status_pembayaran == 'pending')
+                                            <span class="badge badge-warning">Pending</span>
+                                        @elseif($trx->status_pembayaran == 'failed')
+                                            <span class="badge badge-danger">Failed</span>
+                                        @else
+                                            <span class="badge badge-secondary">{{ $trx->status_pembayaran ?? 'Belum Ada Status' }}</span>
+                                        @endif
+                                    </td>
+                                    <td>
                                         <a href="{{ route('transaksi.show', $trx->id) }}" class="btn btn-info btn-sm">
                                             Detail
                                         </a>
@@ -44,7 +56,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="4" class="text-center">Belum ada transaksi.</td>
+                                    <td colspan="5" class="text-center">Belum ada transaksi.</td>
                                 </tr>
                             @endforelse
                         </tbody>
