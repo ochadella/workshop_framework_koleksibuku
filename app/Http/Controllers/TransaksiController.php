@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Penjualan;
 use Illuminate\Http\Request;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Picqer\Barcode\BarcodeGeneratorPNG;
 
 class TransaksiController extends Controller
 {
@@ -29,7 +30,13 @@ class TransaksiController extends Controller
     {
         $transaksi = Penjualan::with('details')->findOrFail($id);
 
-        $pdf = Pdf::loadView('transaksi.struk', compact('transaksi'))
+        // ✅ Tambahan barcode, tidak menghapus code lama
+        $generator = new BarcodeGeneratorPNG();
+        $barcode = base64_encode(
+            $generator->getBarcode((string) $transaksi->id, $generator::TYPE_CODE_128)
+        );
+
+        $pdf = Pdf::loadView('transaksi.struk', compact('transaksi', 'barcode'))
             ->setPaper([0, 0, 226.77, 600], 'portrait');
 
         return $pdf->stream('struk-transaksi-' . $transaksi->id . '.pdf');

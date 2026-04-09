@@ -38,6 +38,16 @@
         .bold {
             font-weight: bold;
         }
+
+        .barcode {
+            text-align: center;
+            margin: 8px 0 6px 0;
+        }
+
+        .barcode img {
+            width: 160px;
+            height: 40px;
+        }
     </style>
 </head>
 <body>
@@ -48,6 +58,10 @@
     </div>
 
     <div class="line"></div>
+
+    <div class="barcode">
+        <img src="data:image/png;base64,{{ $barcode }}" alt="Barcode">
+    </div>
 
     <p style="margin:2px 0;"><strong>ID:</strong> {{ $transaksi->id }}</p>
     <p style="margin:2px 0;"><strong>Tanggal:</strong> {{ \Carbon\Carbon::parse($transaksi->tanggal)->format('d-m-Y H:i:s') }}</p>
