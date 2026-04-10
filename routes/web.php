@@ -11,6 +11,11 @@ use App\Http\Controllers\PdfController; // ✅ TAMBAHAN
 use App\Http\Controllers\BarangController; // ✅ TAMBAHAN
 use App\Http\Controllers\WilayahController; // ✅ TAMBAHAN MODUL 5
 use App\Http\Controllers\TransaksiController; // ✅ TAMBAHAN RIWAYAT TRANSAKSI
+use App\Http\Controllers\PesananController;
+use App\Http\Controllers\VendorController;
+use App\Http\Controllers\AdminVendorController;
+use App\Models\Vendor;
+use App\Models\Menu;
 
 Auth::routes();
 
@@ -21,11 +26,19 @@ Auth::routes();
 */
 Route::get('/', function () {
     if (auth()->check()) {
+        $user = auth()->user();
+
+        if ($user->role === 'vendor') {
+            return redirect()->route('vendor.index');
+        }
+
         return redirect()->route('dashboard');
     }
 
-    return view('welcome');
-});
+    $vendors = Vendor::orderBy('nama_vendor')->get();
+
+    return view('welcome', compact('vendors'));
+})->name('welcome');
 
 /*
 |--------------------------------------------------------------------------
@@ -53,7 +66,7 @@ Route::post('/otp', [OtpController::class, 'verify'])->name('otp.verify');
 | Callback Midtrans
 |--------------------------------------------------------------------------
 */
-Route::post('/midtrans/callback', [TransaksiController::class, 'callback'])->name('midtrans.callback');
+Route::post('/midtrans/callback', [PesananController::class, 'callback'])->name('midtrans.callback');
 
 /*
 |--------------------------------------------------------------------------
@@ -61,14 +74,21 @@ Route::post('/midtrans/callback', [TransaksiController::class, 'callback'])->nam
 |--------------------------------------------------------------------------
 */
 Route::get('/pesan', function () {
-    return view('customer.pesan');
+    $vendors = Vendor::orderBy('nama_vendor')->get();
+    return view('welcome', compact('vendors'));
 })->name('customer.pesan');
 
-Route::post('/pesan/checkout', [BarangController::class, 'checkoutCustomer'])
-    ->name('customer.checkout');
+Route::get('/get-menu/{vendor}', function ($vendor) {
+    return Menu::where('vendor_id', $vendor)
+        ->orderBy('nama_menu')
+        ->get();
+})->name('customer.getMenu');
 
-Route::post('/pesan/check-status', [TransaksiController::class, 'checkStatus'])
-    ->name('customer.checkStatus');
+Route::post('/checkout', [PesananController::class, 'checkout'])->name('customer.checkout');
+Route::post('/check-status', [PesananController::class, 'checkStatus'])->name('customer.checkStatus');
+Route::post('/midtrans/callback', [PesananController::class, 'callback'])->name('midtrans.callback');
+Route::post('/bayar-sukses/{id}', [PesananController::class, 'bayarSukses'])->name('customer.bayarSukses');
+
 
 /*
 |--------------------------------------------------------------------------
@@ -260,4 +280,28 @@ Route::middleware('auth')->prefix('dashboard')->group(function () {
     */
     Route::resource('barang', BarangController::class);
 
+    // vendor
+    Route::get('/adminvendor', [AdminVendorController::class, 'index'])->name('adminvendor.index');
+    Route::get('/adminvendor/create', [AdminVendorController::class, 'create'])->name('adminvendor.create');
+    Route::post('/adminvendor', [AdminVendorController::class, 'store'])->name('adminvendor.store');
+    Route::get('/adminvendor/{id}/edit', [AdminVendorController::class, 'edit'])->name('adminvendor.edit');
+    Route::put('/adminvendor/{id}', [AdminVendorController::class, 'update'])->name('adminvendor.update');
+    Route::delete('/adminvendor/{id}', [AdminVendorController::class, 'destroy'])->name('adminvendor.destroy');
+
+    Route::get('/dashboard/adminvendor/{id}/pesanan', [AdminVendorController::class, 'pesanan'])->name('adminvendor.pesanan');
+    Route::get('/dashboard/adminvendor/{vendorId}/pesanan/{pesananId}', [AdminVendorController::class, 'pesananDetail'])->name('adminvendor.pesanan.detail');
+
+});
+
+Route::middleware('auth')->prefix('vendor')->group(function () {
+    Route::get('/', [VendorController::class, 'index'])->name('vendor.index');
+
+    Route::post('/menu', [VendorController::class, 'storeMenu'])->name('vendor.menu.store');
+    Route::delete('/menu/{id}', [VendorController::class, 'deleteMenu'])->name('vendor.menu.delete');
+
+    Route::get('/pesanan', [PesananController::class, 'index'])->name('vendor.pesanan');
+    Route::post('/pesanan/{id}/lunas', [PesananController::class, 'lunas'])->name('vendor.pesanan.lunas');
+    
+    Route::get('/pesanan/{id}', [PesananController::class, 'show'])->name('vendor.pesanan.show');
+    Route::get('/pesanan/{id}/struk', [PesananController::class, 'cetakStruk'])->name('vendor.pesanan.struk');
 });

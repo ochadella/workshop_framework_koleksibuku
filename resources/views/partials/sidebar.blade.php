@@ -92,18 +92,18 @@
       </a>
     </li>
 
-    <!-- PEMESANAN KANTIN -->
-    <li class="nav-item {{ request()->routeIs('customer.pesan') ? 'active' : '' }}">
-      <a class="nav-link" href="{{ route('customer.pesan') }}">
-        <span class="menu-title">Pemesanan Kantin</span>
-        <i class="mdi mdi-food menu-icon"></i>
-      </a>
-    </li>
-
-    <!-- RIWAYAT TRANSAKSI -->
+    <!-- RIWAYAT TRANSAKSI
     <li class="nav-item {{ request()->routeIs('transaksi.*') ? 'active' : '' }}">
       <a class="nav-link" href="{{ route('transaksi.index') }}">
         <span class="menu-title">Riwayat Transaksi</span>
+        <i class="mdi mdi-history menu-icon"></i>
+      </a>
+    </li> -->
+
+    <!-- VENDOR -->
+    <li class="nav-item {{ request()->routeIs('adminvendor.*') ? 'active' : '' }}">
+      <a class="nav-link" href="{{ route('adminvendor.index') }}">
+        <span class="menu-title">Vendor</span>
         <i class="mdi mdi-history menu-icon"></i>
       </a>
     </li>

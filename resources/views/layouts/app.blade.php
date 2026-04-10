@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <!-- Required meta tags -->
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <title>{{ config('app.name') }} - @yield('title', 'Dashboard')</title>
@@ -25,7 +24,9 @@
               </div>
             </div>
             <div class="d-flex align-items-center justify-content-between">
-              <a href="https://www.bootstrapdash.com/product/purple-bootstrap-admin-template/"><i class="mdi mdi-home me-3 text-white"></i></a>
+              <a href="{{ auth()->check() && auth()->user()->role === 'vendor' ? route('vendor.index') : route('dashboard') }}">
+                <i class="mdi mdi-home me-3 text-white"></i>
+              </a>
               <button id="bannerClose" class="btn border-0 p-0">
                 <i class="mdi mdi-close text-white mr-0"></i>
               </button>
@@ -36,27 +37,33 @@
 
       @include('partials.navbar')
 
-      <div class="container-fluid page-body-wrapper">
+      <div class="container-fluid page-body-wrapper {{ trim($__env->yieldContent('no-sidebar-class')) }}">
 
-        @include('partials.sidebar')
+        @hasSection('no-sidebar')
+          <div class="main-panel w-100">
+            <div class="content-wrapper">
+              @yield('content')
+            </div>
 
-        <div class="main-panel">
-          <div class="content-wrapper">
-
-            @yield('content')
-
+            @include('partials.footer')
           </div>
+        @else
+          @include('partials.sidebar')
 
-          @include('partials.footer')
-        </div>
+          <div class="main-panel">
+            <div class="content-wrapper">
+              @yield('content')
+            </div>
+
+            @include('partials.footer')
+          </div>
+        @endif
 
       </div>
     </div>
 
     @include('partials.script')
 
-    {{-- ✅ INI YANG KURANG / SALAH SEBELUMNYA --}}
     @stack('scripts')
-
   </body>
 </html>

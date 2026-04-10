@@ -47,6 +47,10 @@ class OtpController extends Controller
 
         Auth::login($user);
 
+        if ($user->role === 'vendor') {
+            return redirect()->route('vendor.index');
+        }
+
         return redirect()->route('dashboard');
     }
 }

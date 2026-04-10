@@ -39,6 +39,7 @@ class GoogleAuthController extends Controller
         } else {
             $user->update([
                 'id_google' => $user->id_google ?? $googleUser->id,
+                'role' => $user->role ?? 'vendor',
             ]);
         }
 
