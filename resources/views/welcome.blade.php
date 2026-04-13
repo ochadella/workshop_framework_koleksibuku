@@ -102,10 +102,22 @@
                         <div class="card-body">
                             <h4 class="card-title">Halaman Pemesanan Kantin</h4>
                             <p class="customer-note">
-                                Customer dapat memesan tanpa login. Sistem akan membuat nama guest otomatis di tabel pesanan.
+                                Customer dapat memesan tanpa login. Silakan pilih customer terlebih dahulu sebelum checkout.
                             </p>
 
                             <div class="row mt-4">
+                                <div class="col-md-6 mb-3">
+                                    <label class="mb-2">Pilih Customer</label>
+                                    <select id="customer_id" class="form-control">
+                                        <option value="">-- Pilih Customer --</option>
+                                        @foreach(\App\Models\Customer::orderBy('nama_customer')->get() as $customer)
+                                            <option value="{{ $customer->id }}">
+                                                {{ $customer->nama_customer }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                </div>
+
                                 <div class="col-md-6 mb-3">
                                     <label class="mb-2">Pilih Vendor</label>
                                     <select id="vendor" class="form-control">
@@ -393,7 +405,13 @@
     document.getElementById('btn-checkout').addEventListener('click', async function () {
         clearAlert();
 
+        const customerId = document.getElementById('customer_id').value;
         const vendorId = document.getElementById('vendor').value;
+
+        if (!customerId) {
+            alert('Pilih customer terlebih dahulu!');
+            return;
+        }
 
         if (!vendorId) {
             alert('Pilih vendor terlebih dahulu!');
@@ -414,6 +432,8 @@
                     "Accept": "application/json"
                 },
                 body: JSON.stringify({
+                    customer_id: customerId,
+                    vendor_id: vendorId,
                     total: total,
                     items: keranjangItems.map(item => ({
                         menu_id: item.menu_id,

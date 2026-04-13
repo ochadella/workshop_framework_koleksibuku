@@ -5,13 +5,15 @@ namespace App\Http\Controllers;
 use App\Models\Pesanan;
 use App\Models\DetailPesanan;
 use App\Models\Menu;
+use App\Models\Customer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Midtrans\Config;
 use Midtrans\Snap;
 use Barryvdh\DomPDF\Facade\Pdf;
-use Picqer\Barcode\BarcodeGeneratorPNG;
+use Endroid\QrCode\QrCode;
+use Endroid\QrCode\Writer\PngWriter;
 
 class PesananController extends Controller
 {
@@ -30,7 +32,7 @@ class PesananController extends Controller
         $vendorId = $user->vendor->id;
         $status = $request->status;
 
-        $query = Pesanan::with(['detailPesanan.menu'])
+        $query = Pesanan::with(['detailPesanan.menu', 'customer'])
             ->whereHas('detailPesanan.menu', function ($q) use ($vendorId) {
                 $q->where('vendor_id', $vendorId);
             });
@@ -65,6 +67,8 @@ class PesananController extends Controller
     public function checkout(Request $request)
     {
         $request->validate([
+            'customer_id' => 'required|integer|exists:customers,id',
+            'vendor_id' => 'required|integer|exists:vendors,id',
             'items' => 'required|array|min:1',
             'total' => 'required|numeric|min:1',
             'items.*.menu_id' => 'required|integer|exists:menus,id',
@@ -81,13 +85,12 @@ class PesananController extends Controller
             Config::$isSanitized = true;
             Config::$is3ds = true;
 
-            // generate nama guest: Guest_0001, Guest_0002, dst
-            $lastPesanan = Pesanan::orderByDesc('idpesanan')->first();
-            $nextNumber = $lastPesanan ? ($lastPesanan->idpesanan + 1) : 1;
-            $guestName = 'Guest_' . str_pad($nextNumber, 4, '0', STR_PAD_LEFT);
+            $customer = Customer::findOrFail($request->customer_id);
+            $vendorId = (int) $request->vendor_id;
 
             $pesanan = Pesanan::create([
-                'nama' => $guestName,
+                'nama' => $customer->nama_customer,
+                'customer_id' => $customer->id,
                 'tanggal' => now(),
                 'total' => (int) $request->total,
                 'metode_bayar' => 'qris',
@@ -99,7 +102,13 @@ class PesananController extends Controller
             $itemDetails = [];
 
             foreach ($request->items as $item) {
-                $menu = Menu::findOrFail($item['menu_id']);
+                $menu = Menu::where('id', $item['menu_id'])
+                    ->where('vendor_id', $vendorId)
+                    ->first();
+
+                if (!$menu) {
+                    throw new \Exception('Menu tidak valid atau tidak sesuai dengan vendor yang dipilih.');
+                }
 
                 DetailPesanan::create([
                     'idpesanan' => $pesanan->idpesanan,
@@ -128,7 +137,9 @@ class PesananController extends Controller
                     'gross_amount' => (int) $request->total,
                 ],
                 'customer_details' => [
-                    'first_name' => $guestName,
+                    'first_name' => $customer->nama_customer,
+                    'email' => $customer->email ?? '',
+                    'phone' => $customer->no_hp ?? '',
                 ],
                 'item_details' => $itemDetails,
             ];
@@ -140,7 +151,7 @@ class PesananController extends Controller
             return response()->json([
                 'status' => true,
                 'message' => 'Checkout berhasil dibuat',
-                'guest_name' => $guestName,
+                'customer_name' => $customer->nama_customer,
                 'snap_token' => $snapToken,
                 'order_id' => $pesanan->idpesanan,
                 'midtrans_order_id' => $orderId,
@@ -221,7 +232,6 @@ class PesananController extends Controller
 
         $id = $request->order_id;
 
-        // kalau yang dikirim "ORDER-5", ubah ke 5
         if (str_starts_with($id, 'ORDER-')) {
             $id = str_replace('ORDER-', '', $id);
         }
@@ -254,7 +264,7 @@ class PesananController extends Controller
 
         $vendorId = $user->vendor->id;
 
-        $pesanan = Pesanan::with(['detailPesanan.menu'])
+        $pesanan = Pesanan::with(['detailPesanan.menu', 'customer'])
             ->where('idpesanan', $id)
             ->whereHas('detailPesanan.menu', function ($q) use ($vendorId) {
                 $q->where('vendor_id', $vendorId);
@@ -275,20 +285,26 @@ class PesananController extends Controller
 
         $vendorId = $user->vendor->id;
 
-        $pesanan = Pesanan::with(['detailPesanan.menu'])
+        $pesanan = Pesanan::with(['detailPesanan.menu', 'customer'])
             ->where('idpesanan', $id)
             ->whereHas('detailPesanan.menu', function ($q) use ($vendorId) {
                 $q->where('vendor_id', $vendorId);
             })
             ->firstOrFail();
 
-        $generator = new BarcodeGeneratorPNG();
-        $barcode = base64_encode(
-            $generator->getBarcode((string) $pesanan->idpesanan, $generator::TYPE_CODE_128)
+        $writer = new PngWriter();
+
+        $qrCode = new QrCode(
+            data: 'ORDER-' . $pesanan->idpesanan,
+            size: 150,
+            margin: 5
         );
 
-        $pdf = Pdf::loadView('vendor.struk-pesanan', compact('pesanan', 'barcode'))
-            ->setPaper([0, 0, 226.77, 600], 'portrait');
+        $result = $writer->write($qrCode);
+        $qrcode = base64_encode($result->getString());
+
+        $pdf = Pdf::loadView('vendor.struk-pesanan', compact('pesanan', 'qrcode'))
+            ->setPaper([0, 0, 226.77, 700], 'portrait');
 
         return $pdf->stream('struk-pesanan-' . $pesanan->idpesanan . '.pdf');
     }

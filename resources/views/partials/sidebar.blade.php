@@ -52,6 +52,37 @@
       </a>
     </li>
 
+    <!-- ✅ CUSTOMER (TAMBAHAN) -->
+    <li class="nav-item">
+      <a class="nav-link" data-bs-toggle="collapse" href="#customerMenu" aria-expanded="false" aria-controls="customerMenu">
+        <span class="menu-title">Customer</span>
+        <i class="mdi mdi-account-multiple menu-icon"></i>
+      </a>
+      <div class="collapse" id="customerMenu">
+        <ul class="nav flex-column sub-menu">
+
+          <li class="nav-item">
+            <a class="nav-link" href="{{ route('customer.index') }}">
+              Data Customer
+            </a>
+          </li>
+
+          <li class="nav-item">
+            <a class="nav-link" href="{{ route('customer.createBlob') }}">
+              Tambah Customer 1 (Blob)
+            </a>
+          </li>
+
+          <li class="nav-item">
+            <a class="nav-link" href="{{ route('customer.createFile') }}">
+              Tambah Customer 2 (File)
+            </a>
+          </li>
+
+        </ul>
+      </div>
+    </li>
+
     <!-- SELECT KOTA -->
     <li class="nav-item {{ request()->is('dashboard/select-kota') ? 'active' : '' }}">
       <a class="nav-link" href="{{ url('/dashboard/select-kota') }}">

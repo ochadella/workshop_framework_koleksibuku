@@ -12,6 +12,7 @@ use Illuminate\Support\Str;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Midtrans\Config;
 use Midtrans\Snap;
+use Picqer\Barcode\BarcodeGeneratorPNG;
 
 class BarangController extends Controller
 {
@@ -20,7 +21,6 @@ class BarangController extends Controller
      */
     public function index()
     {
-        // ✅ FIX: orderBy menggunakan kolom yang benar (id_barang)
         $barangs = Barang::orderBy('id_barang', 'desc')->get();
         return view('barang.index', compact('barangs'));
     }
@@ -45,7 +45,6 @@ class BarangController extends Controller
         ]);
 
         Barang::create($request->only(['nama_barang', 'harga', 'deskripsi']));
-        // ✅ FIX: pakai only() bukan all() agar field lain (id_barang dari trigger) tidak ikut
 
         return redirect()->route('barang.index')
             ->with('success', 'Barang berhasil ditambahkan');
@@ -71,7 +70,6 @@ class BarangController extends Controller
         ]);
 
         $barang->update($request->only(['nama_barang', 'harga', 'deskripsi']));
-        // ✅ FIX: pakai only() agar id_barang tidak bisa diubah via request
 
         return redirect()->route('barang.index')
             ->with('success', 'Barang berhasil diupdate');
@@ -219,7 +217,6 @@ class BarangController extends Controller
         DB::beginTransaction();
 
         try {
-            // ✅ Guest otomatis: Guest_0000001, Guest_0000002, dst.
             $lastGuest = User::where('name', 'like', 'Guest_%')
                 ->orderBy('id', 'desc')
                 ->first();
@@ -318,26 +315,31 @@ class BarangController extends Controller
     public function cetakLabel(Request $request)
     {
         $request->validate([
-            'x'    => 'required|integer|min:1|max:5',
-            'y'    => 'required|integer|min:1|max:8',
-            // ✅ FIX: ids berisi string karena id_barang = 'BRG000001', bukan integer
-            'ids'  => 'required|array|min:1',
+            'x'     => 'required|integer|min:1|max:5',
+            'y'     => 'required|integer|min:1|max:8',
+            'ids'   => 'required|array|min:1',
             'ids.*' => 'string',
         ]);
 
         $x = (int) $request->x;
         $y = (int) $request->y;
 
-        // ✅ FIX: whereIn pakai 'id_barang' bukan 'id'
         $barangs = Barang::whereIn('id_barang', $request->ids)
             ->orderBy('id_barang', 'asc')
             ->get()
-            ->values(); // reset index ke 0..n
+            ->values();
 
-        // ✅ FIX: validasi barang ditemukan
         if ($barangs->isEmpty()) {
             return redirect()->route('barang.index')
                 ->with('error', 'Tidak ada barang yang dipilih atau data tidak ditemukan');
+        }
+
+        $generator = new BarcodeGeneratorPNG();
+
+        foreach ($barangs as $barang) {
+            $barang->barcode = 'data:image/png;base64,' . base64_encode(
+                $generator->getBarcode($barang->id_barang, $generator::TYPE_CODE_128)
+            );
         }
 
         $pdf = Pdf::loadView('barang.label', [

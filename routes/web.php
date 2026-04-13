@@ -7,13 +7,14 @@ use App\Http\Controllers\BukuController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\GoogleAuthController;
 use App\Http\Controllers\OtpController;
-use App\Http\Controllers\PdfController; // ✅ TAMBAHAN
-use App\Http\Controllers\BarangController; // ✅ TAMBAHAN
-use App\Http\Controllers\WilayahController; // ✅ TAMBAHAN MODUL 5
-use App\Http\Controllers\TransaksiController; // ✅ TAMBAHAN RIWAYAT TRANSAKSI
+use App\Http\Controllers\PdfController;
+use App\Http\Controllers\BarangController;
+use App\Http\Controllers\WilayahController;
+use App\Http\Controllers\TransaksiController;
 use App\Http\Controllers\PesananController;
 use App\Http\Controllers\VendorController;
 use App\Http\Controllers\AdminVendorController;
+use App\Http\Controllers\CustomerController; // ✅ TAMBAHAN CUSTOMER
 use App\Models\Vendor;
 use App\Models\Menu;
 
@@ -86,9 +87,7 @@ Route::get('/get-menu/{vendor}', function ($vendor) {
 
 Route::post('/checkout', [PesananController::class, 'checkout'])->name('customer.checkout');
 Route::post('/check-status', [PesananController::class, 'checkStatus'])->name('customer.checkStatus');
-Route::post('/midtrans/callback', [PesananController::class, 'callback'])->name('midtrans.callback');
 Route::post('/bayar-sukses/{id}', [PesananController::class, 'bayarSukses'])->name('customer.bayarSukses');
-
 
 /*
 |--------------------------------------------------------------------------
@@ -232,15 +231,14 @@ Route::middleware('auth')->prefix('dashboard')->group(function () {
     */
     Route::get('/wilayah', [WilayahController::class, 'index'])->name('wilayah.index');
 
-    // ✅ TAMBAHAN: versi Axios
     Route::get('/wilayah-axios', function () {
         return view('wilayah.axios');
     })->name('wilayah.axios');
 
-    Route::get('/get-provinces', [WilayahController::class, 'getProvinces']);
-    Route::get('/get-cities/{province}', [WilayahController::class, 'getCities']);
-    Route::get('/get-districts/{city}', [WilayahController::class, 'getDistricts']);
-    Route::get('/get-villages/{district}', [WilayahController::class, 'getVillages']);
+    Route::get('/get-provinces', [WilayahController::class, 'getProvinces'])->name('wilayah.getProvinces');
+    Route::get('/get-cities/{province}', [WilayahController::class, 'getCities'])->name('wilayah.getCities');
+    Route::get('/get-districts/{city}', [WilayahController::class, 'getDistricts'])->name('wilayah.getDistricts');
+    Route::get('/get-villages/{district}', [WilayahController::class, 'getVillages'])->name('wilayah.getVillages');
 
     /*
     |--------------------------------------------------------------------------
@@ -251,7 +249,6 @@ Route::middleware('auth')->prefix('dashboard')->group(function () {
         return view('pos.index');
     })->name('pos.index');
 
-    // ✅ TAMBAHAN: versi Axios
     Route::get('/pos-axios', function () {
         return view('pos.axios');
     })->name('pos.axios');
@@ -269,8 +266,6 @@ Route::middleware('auth')->prefix('dashboard')->group(function () {
     */
     Route::get('/transaksi', [TransaksiController::class, 'index'])->name('transaksi.index');
     Route::get('/transaksi/{id}', [TransaksiController::class, 'show'])->name('transaksi.show');
-
-    // ✅ TAMBAHAN: Cetak Struk PDF
     Route::get('/transaksi/{id}/struk', [TransaksiController::class, 'cetakStruk'])->name('transaksi.struk');
 
     /*
@@ -280,7 +275,11 @@ Route::middleware('auth')->prefix('dashboard')->group(function () {
     */
     Route::resource('barang', BarangController::class);
 
-    // vendor
+    /*
+    |--------------------------------------------------------------------------
+    | Admin Vendor
+    |--------------------------------------------------------------------------
+    */
     Route::get('/adminvendor', [AdminVendorController::class, 'index'])->name('adminvendor.index');
     Route::get('/adminvendor/create', [AdminVendorController::class, 'create'])->name('adminvendor.create');
     Route::post('/adminvendor', [AdminVendorController::class, 'store'])->name('adminvendor.store');
@@ -291,8 +290,34 @@ Route::middleware('auth')->prefix('dashboard')->group(function () {
     Route::get('/dashboard/adminvendor/{id}/pesanan', [AdminVendorController::class, 'pesanan'])->name('adminvendor.pesanan');
     Route::get('/dashboard/adminvendor/{vendorId}/pesanan/{pesananId}', [AdminVendorController::class, 'pesananDetail'])->name('adminvendor.pesanan.detail');
 
+    /*
+    |--------------------------------------------------------------------------
+    | Customer
+    |--------------------------------------------------------------------------
+    | Data Customer
+    | Tambah Customer 1 = simpan foto ke database/blob
+    | Tambah Customer 2 = simpan file foto + path ke database
+    |--------------------------------------------------------------------------
+    */
+    Route::get('/customer', [CustomerController::class, 'index'])->name('customer.index');
+
+    Route::get('/customer/create-blob', [CustomerController::class, 'createBlob'])->name('customer.createBlob');
+    Route::post('/customer/store-blob', [CustomerController::class, 'storeBlob'])->name('customer.storeBlob');
+
+    Route::get('/customer/create-file', [CustomerController::class, 'createFile'])->name('customer.createFile');
+    Route::post('/customer/store-file', [CustomerController::class, 'storeFile'])->name('customer.storeFile');
+
+    Route::get('/customer/{id}', [CustomerController::class, 'show'])->name('customer.show');
+    Route::get('/customer/{id}/edit', [CustomerController::class, 'edit'])->name('customer.edit');
+    Route::put('/customer/{id}', [CustomerController::class, 'update'])->name('customer.update');
+    Route::delete('/customer/{id}', [CustomerController::class, 'destroy'])->name('customer.destroy');
 });
 
+/*
+|--------------------------------------------------------------------------
+| Vendor Pages
+|--------------------------------------------------------------------------
+*/
 Route::middleware('auth')->prefix('vendor')->group(function () {
     Route::get('/', [VendorController::class, 'index'])->name('vendor.index');
 
@@ -301,7 +326,6 @@ Route::middleware('auth')->prefix('vendor')->group(function () {
 
     Route::get('/pesanan', [PesananController::class, 'index'])->name('vendor.pesanan');
     Route::post('/pesanan/{id}/lunas', [PesananController::class, 'lunas'])->name('vendor.pesanan.lunas');
-    
     Route::get('/pesanan/{id}', [PesananController::class, 'show'])->name('vendor.pesanan.show');
     Route::get('/pesanan/{id}/struk', [PesananController::class, 'cetakStruk'])->name('vendor.pesanan.struk');
 });

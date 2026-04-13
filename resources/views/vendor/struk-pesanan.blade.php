@@ -39,14 +39,14 @@
             font-weight: bold;
         }
 
-        .barcode {
+        .qrcode {
             text-align: center;
-            margin: 8px 0 6px 0;
+            margin: 8px 0 8px 0;
         }
 
-        .barcode img {
-            width: 160px;
-            height: 40px;
+        .qrcode img {
+            width: 90px;
+            height: 90px;
         }
     </style>
 </head>
@@ -59,12 +59,28 @@
 
     <div class="line"></div>
 
-    <div class="barcode">
-        <img src="data:image/png;base64,{{ $barcode }}" alt="Barcode">
+    <div class="qrcode">
+        <img src="data:image/png;base64,{{ $qrcode }}" alt="QR Code">
     </div>
 
-    <p style="margin:2px 0;"><strong>ID:</strong> {{ $pesanan->idpesanan }}</p>
-    <p style="margin:2px 0;"><strong>Nama:</strong> {{ $pesanan->nama }}</p>
+    <p style="margin:2px 0;"><strong>ID Pesanan:</strong> {{ $pesanan->idpesanan }}</p>
+    <p style="margin:2px 0;">
+        <strong>Nama Customer:</strong>
+        {{ $pesanan->customer->nama_customer ?? $pesanan->nama }}
+    </p>
+
+    @if($pesanan->customer)
+        <p style="margin:2px 0;"><strong>ID Customer:</strong> {{ $pesanan->customer->id }}</p>
+
+        @if($pesanan->customer->email)
+            <p style="margin:2px 0;"><strong>Email:</strong> {{ $pesanan->customer->email }}</p>
+        @endif
+
+        @if($pesanan->customer->no_hp)
+            <p style="margin:2px 0;"><strong>No HP:</strong> {{ $pesanan->customer->no_hp }}</p>
+        @endif
+    @endif
+
     <p style="margin:2px 0;"><strong>Tanggal:</strong> {{ \Carbon\Carbon::parse($pesanan->tanggal)->format('d-m-Y H:i:s') }}</p>
 
     <div class="line"></div>

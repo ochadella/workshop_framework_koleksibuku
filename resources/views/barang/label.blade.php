@@ -34,6 +34,18 @@
       overflow: hidden;
       box-sizing: border-box;
     }
+
+    .barcode-img {
+      width: 28mm;
+      height: 7mm;
+      margin-bottom: 1mm;
+    }
+
+    .id-barang {
+      font-size: 8px;
+      font-weight: bold;
+      margin-bottom: 1mm;
+    }
   </style>
 </head>
 <body>
@@ -87,9 +99,20 @@ for ($i = 0; $i < $sisa; $i++) {
         <?php $index = $i + $j; ?>
         <td>
           <?php if ($semua[$index] != "") { ?>
+
+            <?php if (!empty($semua[$index]->barcode)) { ?>
+              <img src="<?php echo $semua[$index]->barcode; ?>" class="barcode-img" alt="Barcode">
+              <br>
+            <?php } ?>
+
+            <div class="id-barang">
+              <?php echo $semua[$index]->id_barang; ?>
+            </div>
+
             <b><?php echo $semua[$index]->nama_barang; ?></b>
             <br><br>
             Rp <?php echo number_format($semua[$index]->harga, 0, ',', '.'); ?>
+
           <?php } ?>
         </td>
       <?php } ?>

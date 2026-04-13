@@ -32,7 +32,28 @@
 
                 <div class="mb-3">
                     <p><strong>ID Pesanan:</strong> {{ $pesanan->idpesanan }}</p>
-                    <p><strong>Nama:</strong> {{ $pesanan->nama }}</p>
+
+                    <p>
+                        <strong>Nama Customer:</strong>
+                        {{ $pesanan->customer->nama_customer ?? $pesanan->nama }}
+                    </p>
+
+                    @if($pesanan->customer)
+                        <p><strong>ID Customer:</strong> {{ $pesanan->customer->id }}</p>
+
+                        @if($pesanan->customer->email)
+                            <p><strong>Email:</strong> {{ $pesanan->customer->email }}</p>
+                        @endif
+
+                        @if($pesanan->customer->no_hp)
+                            <p><strong>No HP:</strong> {{ $pesanan->customer->no_hp }}</p>
+                        @endif
+
+                        @if($pesanan->customer->alamat)
+                            <p><strong>Alamat:</strong> {{ $pesanan->customer->alamat }}</p>
+                        @endif
+                    @endif
+
                     <p><strong>Tanggal:</strong> {{ \Carbon\Carbon::parse($pesanan->tanggal)->format('d-m-Y H:i:s') }}</p>
                     <p><strong>Total:</strong> Rp {{ number_format($pesanan->total, 0, ',', '.') }}</p>
                     <p>

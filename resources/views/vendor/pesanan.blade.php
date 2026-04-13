@@ -46,7 +46,16 @@
                 <div class="border rounded p-3 mb-3">
                     <div class="d-flex justify-content-between align-items-center mb-2">
                         <div>
-                            <strong>{{ $item->nama }}</strong><br>
+                            <strong>
+                                {{ $item->customer->nama_customer ?? $item->nama }}
+                            </strong><br>
+
+                            @if($item->customer)
+                                <small class="text-info d-block">
+                                    Customer ID: {{ $item->customer->id }}
+                                </small>
+                            @endif
+
                             <small class="text-muted">
                                 {{ $item->tanggal ? \Carbon\Carbon::parse($item->tanggal)->format('d-m-Y H:i') : '-' }}
                             </small>
@@ -62,24 +71,24 @@
                     <div class="table-responsive">
                         <table class="table table-sm table-bordered">
                             <thead>
-                            <tr>
-                                <th>Menu</th>
-                                <th width="120">Harga</th>
-                                <th width="100">Jumlah</th>
-                                <th width="150">Subtotal</th>
-                            </tr>
+                                <tr>
+                                    <th>Menu</th>
+                                    <th width="120">Harga</th>
+                                    <th width="100">Jumlah</th>
+                                    <th width="150">Subtotal</th>
+                                </tr>
                             </thead>
                             <tbody>
-                            @foreach($item->detailPesanan as $detail)
-                                @if($detail->menu && $detail->menu->vendor_id == auth()->user()->vendor->id)
-                                    <tr>
-                                        <td>{{ $detail->menu->nama_menu }}</td>
-                                        <td>Rp {{ number_format($detail->harga, 0, ',', '.') }}</td>
-                                        <td>{{ $detail->jumlah }}</td>
-                                        <td>Rp {{ number_format($detail->subtotal, 0, ',', '.') }}</td>
-                                    </tr>
-                                @endif
-                            @endforeach
+                                @foreach($item->detailPesanan as $detail)
+                                    @if($detail->menu && $detail->menu->vendor_id == auth()->user()->vendor->id)
+                                        <tr>
+                                            <td>{{ $detail->menu->nama_menu }}</td>
+                                            <td>Rp {{ number_format($detail->harga, 0, ',', '.') }}</td>
+                                            <td>{{ $detail->jumlah }}</td>
+                                            <td>Rp {{ number_format($detail->subtotal, 0, ',', '.') }}</td>
+                                        </tr>
+                                    @endif
+                                @endforeach
                             </tbody>
                         </table>
                     </div>

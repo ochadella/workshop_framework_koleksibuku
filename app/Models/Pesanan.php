@@ -14,6 +14,7 @@ class Pesanan extends Model
 
     protected $fillable = [
         'nama',
+        'customer_id',
         'tanggal',
         'total',
         'metode_bayar',
@@ -25,5 +26,10 @@ class Pesanan extends Model
     public function detailPesanan()
     {
         return $this->hasMany(DetailPesanan::class, 'idpesanan', 'idpesanan');
+    }
+
+    public function customer()
+    {
+        return $this->belongsTo(Customer::class, 'customer_id', 'id');
     }
 }
