@@ -22,7 +22,7 @@ Auth::routes();
 
 /*
 |--------------------------------------------------------------------------
-| Root (Halaman utama sebelum login = welcome)
+| Root
 |--------------------------------------------------------------------------
 */
 Route::get('/', function () {
@@ -33,12 +33,14 @@ Route::get('/', function () {
             return redirect()->route('vendor.index');
         }
 
+        if ($user->role === 'customer') {
+            return redirect()->route('customer.pesan');
+        }
+
         return redirect()->route('dashboard');
     }
 
-    $vendors = Vendor::orderBy('nama_vendor')->get();
-
-    return view('welcome', compact('vendors'));
+    return redirect()->route('login');
 })->name('welcome');
 
 /*
@@ -47,6 +49,16 @@ Route::get('/', function () {
 |--------------------------------------------------------------------------
 */
 Route::get('/home', function () {
+    $user = auth()->user();
+
+    if ($user && $user->role === 'vendor') {
+        return redirect()->route('vendor.index');
+    }
+
+    if ($user && $user->role === 'customer') {
+        return redirect()->route('customer.pesan');
+    }
+
     return redirect()->route('dashboard');
 })->middleware('auth');
 
@@ -71,23 +83,44 @@ Route::post('/midtrans/callback', [PesananController::class, 'callback'])->name(
 
 /*
 |--------------------------------------------------------------------------
-| Customer Page (Tanpa Login)
+| Customer Page (Harus Login)
 |--------------------------------------------------------------------------
 */
-Route::get('/pesan', function () {
-    $vendors = Vendor::orderBy('nama_vendor')->get();
-    return view('welcome', compact('vendors'));
-})->name('customer.pesan');
+Route::middleware('auth')->group(function () {
+    Route::get('/pesan', function () {
+        if (auth()->user()->role !== 'customer') {
+            return redirect()->route('dashboard')
+                ->with('error', 'Halaman ini hanya untuk customer.');
+        }
 
-Route::get('/get-menu/{vendor}', function ($vendor) {
-    return Menu::where('vendor_id', $vendor)
-        ->orderBy('nama_menu')
-        ->get();
-})->name('customer.getMenu');
+        $vendors = Vendor::orderBy('nama_vendor')->get();
+        return view('welcome', compact('vendors'));
+    })->name('customer.pesan');
 
-Route::post('/checkout', [PesananController::class, 'checkout'])->name('customer.checkout');
-Route::post('/check-status', [PesananController::class, 'checkStatus'])->name('customer.checkStatus');
-Route::post('/bayar-sukses/{id}', [PesananController::class, 'bayarSukses'])->name('customer.bayarSukses');
+    Route::get('/get-menu/{vendor}', function ($vendor) {
+        return Menu::where('vendor_id', $vendor)
+            ->orderBy('nama_menu')
+            ->get();
+    })->name('customer.getMenu');
+
+    Route::post('/checkout', [PesananController::class, 'checkout'])->name('customer.checkout');
+    Route::post('/check-status', [PesananController::class, 'checkStatus'])->name('customer.checkStatus');
+    Route::post('/bayar-sukses/{id}', [PesananController::class, 'bayarSukses'])->name('customer.bayarSukses');
+
+    Route::get('/customer/riwayat', [PesananController::class, 'riwayatCustomer'])
+        ->name('customer.riwayat');
+
+    Route::get('/customer/pesanan/{id}/struk', [PesananController::class, 'cetakStrukCustomer'])
+        ->name('customer.struk');
+
+    /*
+    |--------------------------------------------------------------------------
+    | MODUL 8 - QR Code Pesanan Customer Bisa Diakses Ulang
+    |--------------------------------------------------------------------------
+    */
+    Route::get('/pesanan/qrcode/{id}', [PesananController::class, 'showQrCode'])
+        ->name('pesanan.qrcode');
+});
 
 /*
 |--------------------------------------------------------------------------
@@ -206,6 +239,17 @@ Route::middleware('auth')->prefix('dashboard')->group(function () {
 
     Route::post('barang/cetak-label', [BarangController::class, 'cetakLabel'])
         ->name('barang.cetakLabel');
+
+    /*
+    |--------------------------------------------------------------------------
+    | MODUL 8 - Scan Barcode Barang
+    |--------------------------------------------------------------------------
+    */
+    Route::get('/barang/scan-barcode', [BarangController::class, 'scanBarcode'])
+        ->name('barang.scanBarcode');
+
+    Route::get('/barang/cari-barcode/{id}', [BarangController::class, 'cariBarcode'])
+        ->name('barang.cariBarcode');
 
     /*
     |--------------------------------------------------------------------------
@@ -328,4 +372,15 @@ Route::middleware('auth')->prefix('vendor')->group(function () {
     Route::post('/pesanan/{id}/lunas', [PesananController::class, 'lunas'])->name('vendor.pesanan.lunas');
     Route::get('/pesanan/{id}', [PesananController::class, 'show'])->name('vendor.pesanan.show');
     Route::get('/pesanan/{id}/struk', [PesananController::class, 'cetakStruk'])->name('vendor.pesanan.struk');
+
+    /*
+    |--------------------------------------------------------------------------
+    | MODUL 8 - Scan QR Code Pesanan Customer oleh Vendor
+    |--------------------------------------------------------------------------
+    */
+    Route::get('/scan-pesanan', [VendorController::class, 'scanPesanan'])
+        ->name('vendor.scanPesanan');
+
+    Route::get('/cari-pesanan/{id}', [VendorController::class, 'cariPesanan'])
+        ->name('vendor.cariPesanan');
 });

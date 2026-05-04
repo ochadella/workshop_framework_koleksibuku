@@ -54,6 +54,11 @@
             <a href="{{ route('vendor.pesanan') }}" class="btn btn-success">
                 Lihat Pesanan
             </a>
+
+            <a href="{{ route('vendor.scanPesanan') }}" class="btn btn-warning">
+                Scan QR Pesanan
+            </a>
+
         </form>
     </div>
 </div>

@@ -45,10 +45,18 @@
     </li>
 
     <!-- BARANG -->
-    <li class="nav-item {{ request()->routeIs('barang.*') ? 'active' : '' }}">
+    <li class="nav-item {{ request()->routeIs('barang.index') ? 'active' : '' }}">
       <a class="nav-link" href="{{ route('barang.index') }}">
         <span class="menu-title">Barang</span>
         <i class="mdi mdi-barcode-scan menu-icon"></i>
+      </a>
+    </li>
+
+    <!-- SCAN BARCODE BARANG -->
+    <li class="nav-item {{ request()->routeIs('barang.scanBarcode') ? 'active' : '' }}">
+      <a class="nav-link" href="{{ route('barang.scanBarcode') }}">
+        <span class="menu-title">Scan Barcode Barang</span>
+        <i class="mdi mdi-camera menu-icon"></i>
       </a>
     </li>
 
@@ -122,14 +130,6 @@
         <i class="mdi mdi-cash-multiple menu-icon"></i>
       </a>
     </li>
-
-    <!-- RIWAYAT TRANSAKSI
-    <li class="nav-item {{ request()->routeIs('transaksi.*') ? 'active' : '' }}">
-      <a class="nav-link" href="{{ route('transaksi.index') }}">
-        <span class="menu-title">Riwayat Transaksi</span>
-        <i class="mdi mdi-history menu-icon"></i>
-      </a>
-    </li> -->
 
     <!-- VENDOR -->
     <li class="nav-item {{ request()->routeIs('adminvendor.*') ? 'active' : '' }}">

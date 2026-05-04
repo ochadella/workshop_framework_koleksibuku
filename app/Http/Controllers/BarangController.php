@@ -350,4 +350,36 @@ class BarangController extends Controller
 
         return $pdf->stream('label-barang.pdf');
     }
+
+    /**
+     * MODUL 8 - Halaman scan barcode barang
+     */
+    public function scanBarcode()
+    {
+        return view('barang.scan-barcode');
+    }
+
+    /**
+     * MODUL 8 - Cari barang berdasarkan hasil scan barcode
+     */
+    public function cariBarcode($id)
+    {
+        $barang = Barang::where('id_barang', $id)->first();
+
+        if (!$barang) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Barang tidak ditemukan'
+            ], 404);
+        }
+
+        return response()->json([
+            'status' => true,
+            'data' => [
+                'id_barang' => $barang->id_barang,
+                'nama_barang' => $barang->nama_barang,
+                'harga' => $barang->harga,
+            ]
+        ]);
+    }
 }

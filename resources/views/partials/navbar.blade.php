@@ -40,7 +40,7 @@
                   <span class="availability-status online"></span>
                 </div>
                 <div class="nav-profile-text">
-                  <p class="mb-1 text-black">{{ Auth::user()->name }}</p>
+                  <p class="mb-1 text-black">{{ Auth::user()->name ?? 'Customer' }}</p>
                 </div>
               </a>
               <div class="dropdown-menu navbar-dropdown" aria-labelledby="profileDropdown">
@@ -48,6 +48,8 @@
                   <i class="mdi mdi-cached me-2 text-success"></i> Activity Log
                 </a>
                 <div class="dropdown-divider"></div>
+
+                @auth
                 <a class="dropdown-item" href="{{ route('logout') }}"
                    onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
                   <i class="mdi mdi-logout me-2 text-primary"></i> Signout
@@ -55,6 +57,7 @@
                 <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">
                   @csrf
                 </form>
+                @endauth
               </div>
             </li>
 
@@ -64,12 +67,15 @@
               </a>
             </li>
 
+            @auth
             <li class="nav-item nav-logout d-none d-lg-block">
               <a class="nav-link" href="{{ route('logout') }}"
                  onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
                 <i class="mdi mdi-power"></i>
               </a>
             </li>
+            @endauth
+
             <li class="nav-item nav-settings d-none d-lg-block">
               <a class="nav-link" href="#">
                 <i class="mdi mdi-format-line-spacing"></i>

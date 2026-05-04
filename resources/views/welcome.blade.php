@@ -56,6 +56,10 @@
     </style>
 </head>
 <body>
+@php
+    $loginCustomer = \App\Models\Customer::where('email', auth()->user()->email ?? null)->first();
+@endphp
+
 <div class="container-scroller">
 
     <nav class="navbar default-layout-navbar col-lg-12 col-12 p-0 fixed-top d-flex flex-row">
@@ -70,16 +74,33 @@
 
         <div class="navbar-menu-wrapper d-flex align-items-center justify-content-end">
             <ul class="navbar-nav navbar-nav-right">
-                <li class="nav-item me-2">
-                    <a href="{{ route('login') }}" class="btn btn-primary px-4">
-                        Login
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="{{ route('register') }}" class="btn btn-success px-4">
-                        Register
-                    </a>
-                </li>
+                @auth
+                    <li class="nav-item me-2">
+                        <span class="btn btn-light px-4">
+                            {{ auth()->user()->name }}
+                        </span>
+                    </li>
+                    <li class="nav-item">
+                        <a href="{{ route('logout') }}" class="btn btn-danger px-4"
+                           onclick="event.preventDefault(); document.getElementById('logout-form-customer').submit();">
+                            Logout
+                        </a>
+                        <form id="logout-form-customer" action="{{ route('logout') }}" method="POST" class="d-none">
+                            @csrf
+                        </form>
+                    </li>
+                @else
+                    <li class="nav-item me-2">
+                        <a href="{{ route('login') }}" class="btn btn-primary px-4">
+                            Login
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="{{ route('register') }}" class="btn btn-success px-4">
+                            Register
+                        </a>
+                    </li>
+                @endauth
             </ul>
         </div>
     </nav>
@@ -102,20 +123,17 @@
                         <div class="card-body">
                             <h4 class="card-title">Halaman Pemesanan Kantin</h4>
                             <p class="customer-note">
-                                Customer dapat memesan tanpa login. Silakan pilih customer terlebih dahulu sebelum checkout.
+                                Customer memesan menggunakan akun yang sedang login.
                             </p>
+
+                            <input type="hidden" id="customer_id" value="{{ $loginCustomer->id ?? '' }}">
 
                             <div class="row mt-4">
                                 <div class="col-md-6 mb-3">
-                                    <label class="mb-2">Pilih Customer</label>
-                                    <select id="customer_id" class="form-control">
-                                        <option value="">-- Pilih Customer --</option>
-                                        @foreach(\App\Models\Customer::orderBy('nama_customer')->get() as $customer)
-                                            <option value="{{ $customer->id }}">
-                                                {{ $customer->nama_customer }}
-                                            </option>
-                                        @endforeach
-                                    </select>
+                                    <label class="mb-2">Customer</label>
+                                    <input type="text" class="form-control"
+                                           value="{{ $loginCustomer->nama_customer ?? auth()->user()->name ?? 'Customer' }}"
+                                           readonly>
                                 </div>
 
                                 <div class="col-md-6 mb-3">
@@ -409,7 +427,7 @@
         const vendorId = document.getElementById('vendor').value;
 
         if (!customerId) {
-            alert('Pilih customer terlebih dahulu!');
+            alert('Data customer untuk akun login ini belum ada. Tambahkan data customer dengan email yang sama dulu.');
             return;
         }
 
@@ -456,11 +474,15 @@
 
             if (result.snap_token) {
                 snap.pay(result.snap_token, {
-                    onSuccess: function () {
-                        showAlert('Pembayaran berhasil. Status: LUNAS.', 'success');
-                        resetKeranjang();
-                        resetCheckoutState();
-                        location.reload();
+                    onSuccess: async function () {
+                        await fetch('/bayar-sukses/' + currentOrderId, {
+                            method: 'POST',
+                            headers: {
+                                'X-CSRF-TOKEN': "{{ csrf_token() }}"
+                            }
+                        });
+
+                        window.location.href = '/pesanan/qrcode/' + currentOrderId;
                     },
                     onPending: function () {
                         showAlert('Pembayaran masih pending. Klik tombol cek status pembayaran.', 'warning');
@@ -517,9 +539,7 @@
                     }
                 });
 
-                resetKeranjang();
-                resetCheckoutState();
-                location.reload();
+                window.location.href = '/pesanan/qrcode/' + currentOrderId;
             } else {
                 showAlert('Pembayaran masih ' + result.status_pembayaran + '.', 'warning');
             }

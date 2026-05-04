@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Menu;
+use App\Models\Pesanan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -76,5 +77,64 @@ class VendorController extends Controller
 
         return redirect()->route('vendor.index')
             ->with('success', 'Menu berhasil dihapus.');
+    }
+
+    /**
+     * MODUL 8 - Halaman scan QR Code pesanan customer
+     */
+    public function scanPesanan()
+    {
+        return view('vendor.scan-pesanan');
+    }
+
+    /**
+     * MODUL 8 - Cari detail pesanan berdasarkan hasil scan QR Code
+     */
+    public function cariPesanan($id)
+    {
+        $user = Auth::user();
+
+        if (!$user || $user->role !== 'vendor' || !$user->vendor) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Kamu tidak punya akses.'
+            ], 403);
+        }
+
+        if (str_starts_with($id, 'ORDER-')) {
+            $id = str_replace('ORDER-', '', $id);
+        }
+
+        $vendorId = $user->vendor->id;
+
+        $pesanan = Pesanan::with(['detailPesanan.menu', 'customer'])
+            ->where('idpesanan', $id)
+            ->whereHas('detailPesanan.menu', function ($q) use ($vendorId) {
+                $q->where('vendor_id', $vendorId);
+            })
+            ->first();
+
+        if (!$pesanan) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Pesanan tidak ditemukan'
+            ], 404);
+        }
+
+        return response()->json([
+            'status' => true,
+            'data' => [
+                'idpesanan' => $pesanan->idpesanan,
+                'nama_customer' => $pesanan->customer->nama_customer ?? $pesanan->nama ?? '-',
+                'status_bayar' => $pesanan->status_bayar == 1 ? 'Lunas' : 'Belum Lunas',
+                'menu' => $pesanan->detailPesanan->map(function ($detail) {
+                    return [
+                        'nama_menu' => $detail->menu->nama_menu ?? '-',
+                        'jumlah' => $detail->jumlah,
+                        'subtotal' => $detail->subtotal,
+                    ];
+                })
+            ]
+        ]);
     }
 }

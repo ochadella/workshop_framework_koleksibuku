@@ -62,7 +62,7 @@ class PesananController extends Controller
     }
 
     /**
-     * Checkout customer dari halaman welcome / guest
+     * Checkout customer dari halaman welcome / customer login
      */
     public function checkout(Request $request)
     {
@@ -222,7 +222,7 @@ class PesananController extends Controller
     }
 
     /**
-     * Check status pembayaran dari halaman guest
+     * Check status pembayaran dari halaman customer
      */
     public function checkStatus(Request $request)
     {
@@ -307,5 +307,77 @@ class PesananController extends Controller
             ->setPaper([0, 0, 226.77, 700], 'portrait');
 
         return $pdf->stream('struk-pesanan-' . $pesanan->idpesanan . '.pdf');
+    }
+
+    /**
+     * MODUL 8 - Halaman QR Code pesanan customer agar bisa diakses ulang
+     */
+    public function showQrCode($id)
+    {
+        $pesanan = Pesanan::with(['detailPesanan.menu', 'customer'])
+            ->where('idpesanan', $id)
+            ->firstOrFail();
+
+        $writer = new PngWriter();
+
+        $qrCode = new QrCode(
+            data: 'ORDER-' . $pesanan->idpesanan,
+            size: 200,
+            margin: 10
+        );
+
+        $result = $writer->write($qrCode);
+        $qrcode = base64_encode($result->getString());
+
+        return view('pesanan.qrcode', compact('pesanan', 'qrcode'));
+    }
+
+    /**
+     * Customer - Riwayat pembelian
+     */
+    public function riwayatCustomer()
+    {
+        $customer = Customer::where('email', auth()->user()->email)->firstOrFail();
+
+        $pesanan = Pesanan::with(['detailPesanan.menu', 'customer'])
+            ->where('customer_id', $customer->id)
+            ->orderByDesc('idpesanan')
+            ->get();
+
+        return view('customer.riwayat', compact('pesanan'));
+    }
+
+    /**
+     * Customer - Cetak struk jika sudah lunas
+     */
+    public function cetakStrukCustomer($id)
+    {
+        $customer = Customer::where('email', auth()->user()->email)->firstOrFail();
+
+        $pesanan = Pesanan::with(['detailPesanan.menu', 'customer'])
+            ->where('idpesanan', $id)
+            ->where('customer_id', $customer->id)
+            ->firstOrFail();
+
+        if ($pesanan->status_bayar != 1) {
+            return redirect()->route('customer.riwayat')
+                ->with('error', 'Struk hanya bisa dicetak jika pesanan sudah lunas.');
+        }
+
+        $writer = new PngWriter();
+
+        $qrCode = new QrCode(
+            data: 'ORDER-' . $pesanan->idpesanan,
+            size: 150,
+            margin: 5
+        );
+
+        $result = $writer->write($qrCode);
+        $qrcode = base64_encode($result->getString());
+
+        $pdf = Pdf::loadView('vendor.struk-pesanan', compact('pesanan', 'qrcode'))
+            ->setPaper([0, 0, 226.77, 700], 'portrait');
+
+        return $pdf->stream('struk-customer-' . $pesanan->idpesanan . '.pdf');
     }
 }
