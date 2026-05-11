@@ -60,6 +60,14 @@
       </a>
     </li>
 
+    <!-- KUNJUNGAN TOKO -->
+    <li class="nav-item {{ request()->routeIs('kunjungan.*') ? 'active' : '' }}">
+      <a class="nav-link" href="{{ route('kunjungan.index') }}">
+        <span class="menu-title">Kunjungan Toko</span>
+        <i class="mdi mdi-map-marker-radius menu-icon"></i>
+      </a>
+    </li>
+
     <!-- ✅ CUSTOMER (TAMBAHAN) -->
     <li class="nav-item">
       <a class="nav-link" data-bs-toggle="collapse" href="#customerMenu" aria-expanded="false" aria-controls="customerMenu">

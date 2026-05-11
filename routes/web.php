@@ -14,7 +14,8 @@ use App\Http\Controllers\TransaksiController;
 use App\Http\Controllers\PesananController;
 use App\Http\Controllers\VendorController;
 use App\Http\Controllers\AdminVendorController;
-use App\Http\Controllers\CustomerController; // ✅ TAMBAHAN CUSTOMER
+use App\Http\Controllers\CustomerController;
+use App\Http\Controllers\KunjunganTokoController; // ✅ TAMBAHAN GEOLOCATION
 use App\Models\Vendor;
 use App\Models\Menu;
 
@@ -151,7 +152,7 @@ Route::middleware('auth')->prefix('dashboard')->group(function () {
     /*
     |--------------------------------------------------------------------------
     | UI Features
-    |--------------------------------------------------------------------------
+|--------------------------------------------------------------------------
     */
     Route::prefix('ui')->group(function () {
         Route::get('/buttons', function () {
@@ -250,6 +251,23 @@ Route::middleware('auth')->prefix('dashboard')->group(function () {
 
     Route::get('/barang/cari-barcode/{id}', [BarangController::class, 'cariBarcode'])
         ->name('barang.cariBarcode');
+
+    /*
+    |--------------------------------------------------------------------------
+    | MODUL GEOLOCATION - Kunjungan Toko
+    |--------------------------------------------------------------------------
+    */
+    Route::get('/kunjungan-toko', [KunjunganTokoController::class, 'index'])
+        ->name('kunjungan.index');
+
+    Route::post('/kunjungan-toko/store', [KunjunganTokoController::class, 'store'])
+        ->name('kunjungan.store');
+
+    Route::get('/kunjungan-toko/cari/{barcode}', [KunjunganTokoController::class, 'cariBarcode'])
+        ->name('kunjungan.cari');
+
+    Route::post('/kunjungan-toko/cek', [KunjunganTokoController::class, 'cekKunjungan'])
+        ->name('kunjungan.cek');
 
     /*
     |--------------------------------------------------------------------------
@@ -354,7 +372,8 @@ Route::middleware('auth')->prefix('dashboard')->group(function () {
     Route::get('/customer/{id}', [CustomerController::class, 'show'])->name('customer.show');
     Route::get('/customer/{id}/edit', [CustomerController::class, 'edit'])->name('customer.edit');
     Route::put('/customer/{id}', [CustomerController::class, 'update'])->name('customer.update');
-    Route::delete('/customer/{id}', [CustomerController::class, 'destroy'])->name('customer.destroy');
+    Route::delete('/customer/{id}', [CustomerController::class, 'destroy'])
+        ->name('customer.destroy');
 });
 
 /*
