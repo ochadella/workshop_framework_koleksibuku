@@ -16,6 +16,7 @@ use App\Http\Controllers\VendorController;
 use App\Http\Controllers\AdminVendorController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\KunjunganTokoController; // ✅ TAMBAHAN GEOLOCATION
+use App\Http\Controllers\AntrianController;
 use App\Models\Vendor;
 use App\Models\Menu;
 
@@ -88,25 +89,36 @@ Route::post('/midtrans/callback', [PesananController::class, 'callback'])->name(
 |--------------------------------------------------------------------------
 */
 Route::middleware('auth')->group(function () {
+
     Route::get('/pesan', function () {
+
         if (auth()->user()->role !== 'customer') {
             return redirect()->route('dashboard')
                 ->with('error', 'Halaman ini hanya untuk customer.');
         }
 
         $vendors = Vendor::orderBy('nama_vendor')->get();
+
         return view('welcome', compact('vendors'));
+
     })->name('customer.pesan');
 
     Route::get('/get-menu/{vendor}', function ($vendor) {
+
         return Menu::where('vendor_id', $vendor)
             ->orderBy('nama_menu')
             ->get();
+
     })->name('customer.getMenu');
 
-    Route::post('/checkout', [PesananController::class, 'checkout'])->name('customer.checkout');
-    Route::post('/check-status', [PesananController::class, 'checkStatus'])->name('customer.checkStatus');
-    Route::post('/bayar-sukses/{id}', [PesananController::class, 'bayarSukses'])->name('customer.bayarSukses');
+    Route::post('/checkout', [PesananController::class, 'checkout'])
+        ->name('customer.checkout');
+
+    Route::post('/check-status', [PesananController::class, 'checkStatus'])
+        ->name('customer.checkStatus');
+
+    Route::post('/bayar-sukses/{id}', [PesananController::class, 'bayarSukses'])
+        ->name('customer.bayarSukses');
 
     Route::get('/customer/riwayat', [PesananController::class, 'riwayatCustomer'])
         ->name('customer.riwayat');
@@ -121,6 +133,7 @@ Route::middleware('auth')->group(function () {
     */
     Route::get('/pesanan/qrcode/{id}', [PesananController::class, 'showQrCode'])
         ->name('pesanan.qrcode');
+
 });
 
 /*
@@ -142,8 +155,11 @@ Route::middleware('auth')->prefix('dashboard')->group(function () {
     | PDF Routes
     |--------------------------------------------------------------------------
     */
-    Route::get('/pdf/sertifikat', [PdfController::class, 'sertifikat'])->name('pdf.sertifikat');
-    Route::get('/pdf/undangan', [PdfController::class, 'undangan'])->name('pdf.undangan');
+    Route::get('/pdf/sertifikat', [PdfController::class, 'sertifikat'])
+        ->name('pdf.sertifikat');
+
+    Route::get('/pdf/undangan', [PdfController::class, 'undangan'])
+        ->name('pdf.undangan');
 
     Route::get('/pdf', function () {
         return view('pdf.index');
@@ -152,9 +168,10 @@ Route::middleware('auth')->prefix('dashboard')->group(function () {
     /*
     |--------------------------------------------------------------------------
     | UI Features
-|--------------------------------------------------------------------------
+    |--------------------------------------------------------------------------
     */
     Route::prefix('ui')->group(function () {
+
         Route::get('/buttons', function () {
             return view('pages.ui-features.buttons');
         })->name('buttons');
@@ -166,6 +183,7 @@ Route::middleware('auth')->prefix('dashboard')->group(function () {
         Route::get('/typography', function () {
             return view('pages.ui-features.typography');
         })->name('typography');
+
     });
 
     /*
@@ -291,16 +309,24 @@ Route::middleware('auth')->prefix('dashboard')->group(function () {
     | Modul 5 - Cascading Wilayah
     |--------------------------------------------------------------------------
     */
-    Route::get('/wilayah', [WilayahController::class, 'index'])->name('wilayah.index');
+    Route::get('/wilayah', [WilayahController::class, 'index'])
+        ->name('wilayah.index');
 
     Route::get('/wilayah-axios', function () {
         return view('wilayah.axios');
     })->name('wilayah.axios');
 
-    Route::get('/get-provinces', [WilayahController::class, 'getProvinces'])->name('wilayah.getProvinces');
-    Route::get('/get-cities/{province}', [WilayahController::class, 'getCities'])->name('wilayah.getCities');
-    Route::get('/get-districts/{city}', [WilayahController::class, 'getDistricts'])->name('wilayah.getDistricts');
-    Route::get('/get-villages/{district}', [WilayahController::class, 'getVillages'])->name('wilayah.getVillages');
+    Route::get('/get-provinces', [WilayahController::class, 'getProvinces'])
+        ->name('wilayah.getProvinces');
+
+    Route::get('/get-cities/{province}', [WilayahController::class, 'getCities'])
+        ->name('wilayah.getCities');
+
+    Route::get('/get-districts/{city}', [WilayahController::class, 'getDistricts'])
+        ->name('wilayah.getDistricts');
+
+    Route::get('/get-villages/{district}', [WilayahController::class, 'getVillages'])
+        ->name('wilayah.getVillages');
 
     /*
     |--------------------------------------------------------------------------
@@ -326,9 +352,14 @@ Route::middleware('auth')->prefix('dashboard')->group(function () {
     | Riwayat Transaksi
     |--------------------------------------------------------------------------
     */
-    Route::get('/transaksi', [TransaksiController::class, 'index'])->name('transaksi.index');
-    Route::get('/transaksi/{id}', [TransaksiController::class, 'show'])->name('transaksi.show');
-    Route::get('/transaksi/{id}/struk', [TransaksiController::class, 'cetakStruk'])->name('transaksi.struk');
+    Route::get('/transaksi', [TransaksiController::class, 'index'])
+        ->name('transaksi.index');
+
+    Route::get('/transaksi/{id}', [TransaksiController::class, 'show'])
+        ->name('transaksi.show');
+
+    Route::get('/transaksi/{id}/struk', [TransaksiController::class, 'cetakStruk'])
+        ->name('transaksi.struk');
 
     /*
     |--------------------------------------------------------------------------
@@ -342,38 +373,76 @@ Route::middleware('auth')->prefix('dashboard')->group(function () {
     | Admin Vendor
     |--------------------------------------------------------------------------
     */
-    Route::get('/adminvendor', [AdminVendorController::class, 'index'])->name('adminvendor.index');
-    Route::get('/adminvendor/create', [AdminVendorController::class, 'create'])->name('adminvendor.create');
-    Route::post('/adminvendor', [AdminVendorController::class, 'store'])->name('adminvendor.store');
-    Route::get('/adminvendor/{id}/edit', [AdminVendorController::class, 'edit'])->name('adminvendor.edit');
-    Route::put('/adminvendor/{id}', [AdminVendorController::class, 'update'])->name('adminvendor.update');
-    Route::delete('/adminvendor/{id}', [AdminVendorController::class, 'destroy'])->name('adminvendor.destroy');
+    Route::get('/adminvendor', [AdminVendorController::class, 'index'])
+        ->name('adminvendor.index');
 
-    Route::get('/dashboard/adminvendor/{id}/pesanan', [AdminVendorController::class, 'pesanan'])->name('adminvendor.pesanan');
-    Route::get('/dashboard/adminvendor/{vendorId}/pesanan/{pesananId}', [AdminVendorController::class, 'pesananDetail'])->name('adminvendor.pesanan.detail');
+    Route::get('/adminvendor/create', [AdminVendorController::class, 'create'])
+        ->name('adminvendor.create');
+
+    Route::post('/adminvendor', [AdminVendorController::class, 'store'])
+        ->name('adminvendor.store');
+
+    Route::get('/adminvendor/{id}/edit', [AdminVendorController::class, 'edit'])
+        ->name('adminvendor.edit');
+
+    Route::put('/adminvendor/{id}', [AdminVendorController::class, 'update'])
+        ->name('adminvendor.update');
+
+    Route::delete('/adminvendor/{id}', [AdminVendorController::class, 'destroy'])
+        ->name('adminvendor.destroy');
+
+    Route::get('/dashboard/adminvendor/{id}/pesanan', [AdminVendorController::class, 'pesanan'])
+        ->name('adminvendor.pesanan');
+
+    Route::get('/dashboard/adminvendor/{vendorId}/pesanan/{pesananId}', [AdminVendorController::class, 'pesananDetail'])
+        ->name('adminvendor.pesanan.detail');
 
     /*
     |--------------------------------------------------------------------------
     | Customer
     |--------------------------------------------------------------------------
-    | Data Customer
-    | Tambah Customer 1 = simpan foto ke database/blob
-    | Tambah Customer 2 = simpan file foto + path ke database
-    |--------------------------------------------------------------------------
     */
-    Route::get('/customer', [CustomerController::class, 'index'])->name('customer.index');
+    Route::get('/customer', [CustomerController::class, 'index'])
+        ->name('customer.index');
 
-    Route::get('/customer/create-blob', [CustomerController::class, 'createBlob'])->name('customer.createBlob');
-    Route::post('/customer/store-blob', [CustomerController::class, 'storeBlob'])->name('customer.storeBlob');
+    Route::get('/customer/create-blob', [CustomerController::class, 'createBlob'])
+        ->name('customer.createBlob');
 
-    Route::get('/customer/create-file', [CustomerController::class, 'createFile'])->name('customer.createFile');
-    Route::post('/customer/store-file', [CustomerController::class, 'storeFile'])->name('customer.storeFile');
+    Route::post('/customer/store-blob', [CustomerController::class, 'storeBlob'])
+        ->name('customer.storeBlob');
 
-    Route::get('/customer/{id}', [CustomerController::class, 'show'])->name('customer.show');
-    Route::get('/customer/{id}/edit', [CustomerController::class, 'edit'])->name('customer.edit');
-    Route::put('/customer/{id}', [CustomerController::class, 'update'])->name('customer.update');
+    Route::get('/customer/create-file', [CustomerController::class, 'createFile'])
+        ->name('customer.createFile');
+
+    Route::post('/customer/store-file', [CustomerController::class, 'storeFile'])
+        ->name('customer.storeFile');
+
+    Route::get('/customer/{id}', [CustomerController::class, 'show'])
+        ->name('customer.show');
+
+    Route::get('/customer/{id}/edit', [CustomerController::class, 'edit'])
+        ->name('customer.edit');
+
+    Route::put('/customer/{id}', [CustomerController::class, 'update'])
+        ->name('customer.update');
+
     Route::delete('/customer/{id}', [CustomerController::class, 'destroy'])
         ->name('customer.destroy');
+
+    /*
+    |--------------------------------------------------------------------------
+    | MODUL 11 - Web NFC API
+    |--------------------------------------------------------------------------
+    */
+    Route::get('/nfc', function () {
+        return view('nfc.index');
+    })->name('nfc.index');
+
+    Route::post('/nfc/store', [App\Http\Controllers\NfcController::class, 'store'])
+        ->name('nfc.store');
+
+    Route::get('/nfc/riwayat', [App\Http\Controllers\NfcController::class, 'index'])
+        ->name('nfc.riwayat');
 });
 
 /*
@@ -382,15 +451,27 @@ Route::middleware('auth')->prefix('dashboard')->group(function () {
 |--------------------------------------------------------------------------
 */
 Route::middleware('auth')->prefix('vendor')->group(function () {
-    Route::get('/', [VendorController::class, 'index'])->name('vendor.index');
 
-    Route::post('/menu', [VendorController::class, 'storeMenu'])->name('vendor.menu.store');
-    Route::delete('/menu/{id}', [VendorController::class, 'deleteMenu'])->name('vendor.menu.delete');
+    Route::get('/', [VendorController::class, 'index'])
+        ->name('vendor.index');
 
-    Route::get('/pesanan', [PesananController::class, 'index'])->name('vendor.pesanan');
-    Route::post('/pesanan/{id}/lunas', [PesananController::class, 'lunas'])->name('vendor.pesanan.lunas');
-    Route::get('/pesanan/{id}', [PesananController::class, 'show'])->name('vendor.pesanan.show');
-    Route::get('/pesanan/{id}/struk', [PesananController::class, 'cetakStruk'])->name('vendor.pesanan.struk');
+    Route::post('/menu', [VendorController::class, 'storeMenu'])
+        ->name('vendor.menu.store');
+
+    Route::delete('/menu/{id}', [VendorController::class, 'deleteMenu'])
+        ->name('vendor.menu.delete');
+
+    Route::get('/pesanan', [PesananController::class, 'index'])
+        ->name('vendor.pesanan');
+
+    Route::post('/pesanan/{id}/lunas', [PesananController::class, 'lunas'])
+        ->name('vendor.pesanan.lunas');
+
+    Route::get('/pesanan/{id}', [PesananController::class, 'show'])
+        ->name('vendor.pesanan.show');
+
+    Route::get('/pesanan/{id}/struk', [PesananController::class, 'cetakStruk'])
+        ->name('vendor.pesanan.struk');
 
     /*
     |--------------------------------------------------------------------------
@@ -402,4 +483,45 @@ Route::middleware('auth')->prefix('vendor')->group(function () {
 
     Route::get('/cari-pesanan/{id}', [VendorController::class, 'cariPesanan'])
         ->name('vendor.cariPesanan');
+
 });
+
+/*
+|--------------------------------------------------------------------------
+| DISPLAY ANTRIAN
+|--------------------------------------------------------------------------
+*/
+Route::get('/display-antrian', function () {
+    return view('antrian.display-antrian');
+})->name('display.antrian');
+
+// Guest
+Route::get('/antrian/guest', [AntrianController::class, 'guest'])
+    ->name('antrian.guest');
+
+Route::post('/antrian/daftar', [AntrianController::class, 'daftar'])
+    ->name('antrian.daftar');
+
+Route::get('/antrian/tiket/{antrian}', [AntrianController::class, 'tiket'])
+    ->name('antrian.tiket');
+
+// Admin
+Route::get('/antrian/admin', [AntrianController::class, 'admin'])
+    ->name('antrian.admin');
+
+Route::post('/antrian/panggil', [AntrianController::class, 'panggil'])
+    ->name('antrian.panggil');
+
+Route::post('/antrian/panggil-terlambat', [AntrianController::class, 'panggilTerlambat'])
+    ->name('antrian.panggilTerlambat');
+
+Route::post('/antrian/selesai', [AntrianController::class, 'selesai'])
+    ->name('antrian.selesai');
+
+// Papan display
+Route::get('/antrian/papan', [AntrianController::class, 'papan'])
+    ->name('antrian.papan');
+
+// SSE Stream
+Route::get('/sse/antrian', [AntrianController::class, 'stream'])
+    ->name('antrian.stream');

@@ -50,6 +50,11 @@
                                 {{ $item->customer->nama_customer ?? $item->nama }}
                             </strong><br>
 
+                            {{-- ✅ TAMBAHAN NO ANTRIAN --}}
+                            <small class="text-primary">
+                                No Antrian: {{ $item->idpesanan }}
+                            </small><br>
+
                             @if($item->customer)
                                 <small class="text-info d-block">
                                     Customer ID: {{ $item->customer->id }}
@@ -101,6 +106,13 @@
                                 Detail
                             </a>
 
+                            {{-- ✅ TOMBOL PANGGIL --}}
+                            <button 
+                                class="btn btn-warning btn-sm"
+                                onclick="panggilAntrian('{{ $item->idpesanan }}', '{{ $item->customer->nama_customer ?? $item->nama }}')">
+                                🔊 Panggil
+                            </button>
+
                             @if(!$item->status_bayar)
                                 <form action="{{ route('vendor.pesanan.lunas', $item->idpesanan) }}" method="POST" class="d-inline">
                                     @csrf
@@ -120,4 +132,24 @@
         @endif
     </div>
 </div>
+
+{{-- ✅ SCRIPT --}}
+<script>
+
+// 🔥 FORMAT A01, A02
+function formatAntrian(nomor) {
+    nomor = parseInt(nomor);
+    return 'A' + String(nomor).padStart(2, '0');
+}
+
+function panggilAntrian(nomor, nama) {
+
+    let nomorFormat = formatAntrian(nomor);
+
+    // 🔥 PINDAH HALAMAN + KIRIM DATA
+    window.location.href = `{{ route('display.antrian') }}?nomor=${nomorFormat}&nama=${encodeURIComponent(nama)}`;
+}
+
+</script>
+
 @endsection

@@ -17,4 +17,14 @@
 
 <script src="{{ asset('js/dashboard.js') }}"></script>
 
+{{-- 🔥 FIX ANTI DOUBLE LOAD (INI YANG BIKIN LAG + ERROR CONST DUPLICATE) --}}
+<script>
+    if (window.__APP_SCRIPT_LOADED__) {
+        console.warn('Script sudah ke-load, mencegah duplicate execution');
+    } else {
+        window.__APP_SCRIPT_LOADED__ = true;
+    }
+</script>
+
+{{-- stack scripts tetap jalan --}}
 @stack('scripts')

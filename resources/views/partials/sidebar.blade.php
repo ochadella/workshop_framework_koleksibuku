@@ -28,6 +28,14 @@
       </a>
     </li>
 
+    <!-- ✅ ADMIN ANTRIAN (TAMBAHAN) -->
+    <li class="nav-item {{ request()->routeIs('antrian.admin') ? 'active' : '' }}">
+      <a class="nav-link" href="{{ route('antrian.admin') }}">
+        <span class="menu-title">Admin Antrian</span>
+        <i class="mdi mdi-account-clock menu-icon"></i>
+      </a>
+    </li>
+
     <!-- KATEGORI -->
     <li class="nav-item {{ request()->routeIs('kategori.*') ? 'active' : '' }}">
       <a class="nav-link" href="{{ route('kategori.index') }}">
@@ -60,6 +68,21 @@
       </a>
     </li>
 
+    <!-- ✅ SCANNER NFC -->
+    <li class="nav-item {{ request()->routeIs('nfc.index') ? 'active' : '' }}">
+      <a class="nav-link" href="{{ route('nfc.index') }}">
+        <span class="menu-title">Scanner NFC</span>
+        <i class="mdi mdi-nfc menu-icon"></i>
+      </a>
+    </li>
+
+    <li class="nav-item {{ request()->routeIs('nfc.riwayat') ? 'active' : '' }}">
+    <a class="nav-link" href="{{ route('nfc.riwayat') }}">
+        <span class="menu-title">Riwayat NFC</span>
+        <i class="mdi mdi-history menu-icon"></i>
+    </a>
+</li>
+
     <!-- KUNJUNGAN TOKO -->
     <li class="nav-item {{ request()->routeIs('kunjungan.*') ? 'active' : '' }}">
       <a class="nav-link" href="{{ route('kunjungan.index') }}">
@@ -74,6 +97,7 @@
         <span class="menu-title">Customer</span>
         <i class="mdi mdi-account-multiple menu-icon"></i>
       </a>
+
       <div class="collapse" id="customerMenu">
         <ul class="nav flex-column sub-menu">
 
@@ -159,9 +183,12 @@
     <li class="nav-item">
       <a class="nav-link" href="{{ route('logout') }}"
          onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+
         <span class="menu-title">Logout</span>
+
         <i class="mdi mdi-logout menu-icon"></i>
       </a>
+
       <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">
         @csrf
       </form>

@@ -395,7 +395,6 @@
             let id = e.target.dataset.id;
             let nama = e.target.dataset.nama;
             let harga = parseInt(e.target.dataset.harga);
-
             let existingItem = keranjangItems.find(item => item.menu_id == id);
 
             if (existingItem) {
@@ -461,7 +460,6 @@
                     }))
                 })
             });
-
             const result = await response.json();
 
             if (!response.ok || result.status === false) {
